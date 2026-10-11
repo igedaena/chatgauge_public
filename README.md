@@ -82,6 +82,7 @@ icons/                      Runtime icons
 tests/                      Synthetic regression tests
 scripts/validate-manifest.mjs
 PRIVACY.md                  Data handling and permissions
+LICENSE                     GNU GPL version 3
 ```
 
 ## Feedback
@@ -93,7 +94,14 @@ before attaching screenshots, exports or console logs.
 
 ## License
 
-The project's own license has not been selected yet. A project `LICENSE` will be
-added before public release. Marked is distributed under the MIT license; its
+Copyright (C) 2026 igedaena.
+
+ChatGauge's own source code is licensed under the
+[GNU General Public License version 3](LICENSE) (`GPL-3.0-only`). You may use,
+modify and redistribute it under those terms, including commercially. When
+distributing the program or a modified version, provide its corresponding source
+under the GPL as required by the license. The program is provided without warranty.
+
+Marked retains its MIT license; its
 [license](src/vendor/marked.LICENSE.md) and
 [provenance](src/vendor/README.md) are included with the bundled source.
