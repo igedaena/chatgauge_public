@@ -74,6 +74,17 @@ node scripts/validate-manifest.mjs
 The extension uses plain JavaScript, CSS and HTML. Marked 18.0.7 is bundled for
 Markdown tokenization; no runtime download is needed.
 
+To prepare an AMO upload, install Mozilla's `web-ext` tool, then run:
+
+```sh
+node scripts/prepare-amo-package.mjs
+web-ext lint --source-dir dist/amo/runtime
+web-ext build --source-dir dist/amo/runtime --artifacts-dir dist/amo --filename ChatGauge-0.3.3-amo.zip
+```
+
+The staging script copies an explicit runtime allowlist without transforming
+source files. It refuses to overwrite a previous staging directory.
+
 ```text
 manifest.json               Extension configuration
 src/                        Runtime, options, viewer and exporters

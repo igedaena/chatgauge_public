@@ -3,9 +3,13 @@
 `marked.umd.js` is the unmodified browser distribution of Marked **18.0.7**.
 
 - Project: https://github.com/markedjs/marked/tree/v18.0.7
-- Download: https://cdn.jsdelivr.net/npm/marked@18.0.7/lib/marked.umd.js
+- Official distribution: https://registry.npmjs.org/marked/-/marked-18.0.7.tgz
+- Readable source: https://github.com/markedjs/marked/tree/v18.0.7/src
 - License: MIT; full distribution license in `marked.LICENSE.md`
 - SHA-256: `7a1f8c5e7226b75ff16644bdb2c0130d2ae7371e7ea3106c2d6dac77ab0ff7b6`
+
+The bundled file was compared byte-for-byte with `package/lib/marked.umd.js`
+from the official npm archive during release preparation on 2026-10-11.
 
 The extension uses only the Markdown lexer. `src/exporters/html.js` renders an
 allowlist of token types and escapes text, code and raw HTML. It never inserts
