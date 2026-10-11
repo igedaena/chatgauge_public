@@ -1,0 +1,378 @@
+{
+  "extension_description": {
+    "message": "활성 ChatGPT 대화에 저장된 텍스트를 측정하고 내보냅니다.",
+    "description": "ChatGauge extension description"
+  },
+  "options_title": {
+    "message": "ChatGauge 설정",
+    "description": "ChatGauge options title"
+  },
+  "measuring": {
+    "message": "헤아리는 중…",
+    "description": "ChatGauge measuring"
+  },
+  "needs_verification": {
+    "message": "확인 필요",
+    "description": "ChatGauge needs verification"
+  },
+  "usage_unverified": {
+    "message": "사용량 미확인",
+    "description": "ChatGauge usage unverified"
+  },
+  "automatic_measure_hint": {
+    "message": "대화방에서 자동으로 측정합니다.",
+    "description": "ChatGauge automatic measure hint"
+  },
+  "measure_again_hint": {
+    "message": "클릭하여 다시 측정",
+    "description": "ChatGauge measure again hint"
+  },
+  "response_wait_hint": {
+    "message": "AI 응답이 완료되면 전체 대화를 다시 측정합니다.",
+    "description": "ChatGauge response wait hint"
+  },
+  "character_count": {
+    "message": "$1자",
+    "description": "ChatGauge character count"
+  },
+  "character_unit": {
+    "message": "자",
+    "description": "ChatGauge character unit"
+  },
+  "screen_number": {
+    "message": "화면 기준 $1",
+    "description": "ChatGauge screen number"
+  },
+  "baseline_success_hint": {
+    "message": "서버 저장분 조회 성공 · 기준점 갱신 · 마지막 AI 응답의 완료와 최신성은 미확인",
+    "description": "ChatGauge baseline success hint"
+  },
+  "full_success_hint": {
+    "message": "전체 대화 데이터에서 복원한 활성 가지",
+    "description": "ChatGauge full success hint"
+  },
+  "dom_success_hint": {
+    "message": "현재 페이지에 로드된 메시지만 측정한 보조 값 ($1)",
+    "description": "ChatGauge dom success hint"
+  },
+  "message_count": {
+    "message": "메시지 $1개",
+    "description": "ChatGauge message count"
+  },
+  "user_count": {
+    "message": "사용자 $1개",
+    "description": "ChatGauge user count"
+  },
+  "assistant_count": {
+    "message": "AI $1개",
+    "description": "ChatGauge assistant count"
+  },
+  "empty_count": {
+    "message": "빈 본문 $1개",
+    "description": "ChatGauge empty count"
+  },
+  "baseline_loading_hint": {
+    "message": "현재 서버 저장분으로 기준점을 갱신합니다. 응답 완료를 기다리지 않습니다.",
+    "description": "ChatGauge baseline loading hint"
+  },
+  "baseline_failed_hint": {
+    "message": "기준점을 갱신하지 못했습니다. 이전 참고값을 유지합니다.",
+    "description": "ChatGauge baseline failed hint"
+  },
+  "baseline_export_cancelled_hint": {
+    "message": "기준점 조회가 내보내기로 중지됐습니다. 이전 참고값을 유지합니다.",
+    "description": "ChatGauge baseline export cancelled hint"
+  },
+  "verification_exhausted_hint": {
+    "message": "자동 확인 예산 안에서 최신 응답을 확인하지 못했습니다.",
+    "description": "ChatGauge verification exhausted hint"
+  },
+  "admission_rejected_hint": {
+    "message": "현재 서버 저장분에서 최신 사용자 입력을 확인하지 못했습니다. 이전 참고값을 유지합니다.",
+    "description": "ChatGauge admission rejected hint"
+  },
+  "measurement_failed_hint": {
+    "message": "전체 데이터와 화면 메시지를 모두 읽지 못했습니다 ($1; $2).",
+    "description": "ChatGauge measurement failed hint"
+  },
+  "conversation_loading_hint": {
+    "message": "대화방이 생성되면 서버 저장분을 조회합니다.",
+    "description": "ChatGauge conversation loading hint"
+  },
+  "return_cancelled_hint": {
+    "message": "복귀로 기준점 조회가 중지됐습니다. 이전 참고값의 최신성은 미확인입니다.",
+    "description": "ChatGauge return cancelled hint"
+  },
+  "unavailable_title": {
+    "message": "확인 불가 · $1",
+    "description": "ChatGauge unavailable title"
+  },
+  "input_recovery_hint": {
+    "message": "저장분 조회 미확인 · 다음 메시지를 보내면 서버 저장분을 다시 조회합니다.",
+    "description": "ChatGauge input recovery hint"
+  },
+  "automatic_recovery_hint": {
+    "message": "자동 확인 미확인 · 다음 메시지를 보내면 서버 저장분으로 기준점 자동 복구를 시도합니다.",
+    "description": "ChatGauge automatic recovery hint"
+  },
+  "next_verification_hint": {
+    "message": "현재 사용량의 최신성은 미확인 · 다음 메시지부터 자동 확인을 다시 시도합니다.",
+    "description": "ChatGauge next verification hint"
+  },
+  "manual_recovery_hint": {
+    "message": "사용량을 클릭하면 지금 수동으로 갱신할 수 있습니다.",
+    "description": "ChatGauge manual recovery hint"
+  },
+  "expand_button": {
+    "message": "펼쳐보기",
+    "description": "ChatGauge open conversation document button"
+  },
+  "expand_hint": {
+    "message": "대화를 문서로 펼쳐봅니다.",
+    "description": "ChatGauge open conversation document hint"
+  },
+  "expand_unconnected_hint": {
+    "message": "펼쳐보기는 아직 연결되지 않았습니다. 준비 중입니다.",
+    "description": "ChatGauge document view unavailable during UI preparation"
+  },
+  "export_button": {
+    "message": "내보내기",
+    "description": "ChatGauge export button"
+  },
+  "export_preparing": {
+    "message": "파일 준비 중…",
+    "description": "ChatGauge export preparing"
+  },
+  "export_retry": {
+    "message": "내보내기 재시도",
+    "description": "ChatGauge export retry"
+  },
+  "export_initial_hint": {
+    "message": "전체 대화를 새로 조회하여 설정에서 선택한 형식으로 저장합니다",
+    "description": "ChatGauge export initial hint"
+  },
+  "export_failed_hint": {
+    "message": "저장하지 않았습니다 ($1). 클릭하여 새로 조회합니다.",
+    "description": "ChatGauge export failed hint"
+  },
+  "export_hint": {
+    "message": "현재 서버 저장분을 새로 조회해 저장합니다. 완료 미확인 안내는 파일 안에 포함되며, 파일명의 _unchecked 표시는 설정에서 선택할 수 있습니다.",
+    "description": "ChatGauge export hint"
+  },
+  "export_formats": {
+    "message": "저장 형식",
+    "description": "ChatGauge export formats"
+  },
+  "export_formats_hint": {
+    "message": "채팅의 Export 버튼으로 선택한 형식을 저장합니다. 여러 형식을 선택하면 ZIP 하나로 묶습니다.",
+    "description": "ChatGauge export formats hint"
+  },
+  "filename_heading": {
+    "message": "파일명",
+    "description": "ChatGauge filename heading"
+  },
+  "options_open_hint": {
+    "message": "ChatGauge 설정 열기",
+    "description": "Home name button opens the existing options page"
+  },
+  "options_open_failed_hint": {
+    "message": "설정을 열지 못했습니다. 다시 클릭하거나 Firefox 도구 모음의 ChatGauge 아이콘을 사용하세요.",
+    "description": "Home options opening failed without changing the meter"
+  },
+  "include_date": {
+    "message": "날짜 포함",
+    "description": "ChatGauge include date"
+  },
+  "include_time": {
+    "message": "시간 포함",
+    "description": "ChatGauge include time"
+  },
+  "include_unchecked": {
+    "message": "완료 미확인 시 _unchecked 포함",
+    "description": "ChatGauge include unchecked filename marker"
+  },
+  "filename_hint": {
+    "message": "다음 내보내기부터 적용됩니다. 날짜·시간은 UTC 기준입니다. 세 항목을 모두 끄면 채팅방 제목만 사용합니다. 파일 안의 완료 미확인 안내는 유지됩니다.",
+    "description": "ChatGauge filename hint"
+  },
+  "refresh_heading": {
+    "message": "갱신 방식",
+    "description": "ChatGauge refresh heading"
+  },
+  "update_on_input": {
+    "message": "사용자 입력 시 갱신",
+    "description": "ChatGauge update on input"
+  },
+  "refresh_mode_hint": {
+    "message": "켜면 AI 응답 완료를 기다리지 않고, 입력할 때 서버 저장분을 조회합니다. 최신 응답은 다음 입력까지 반영되지 않을 수 있습니다. 꺼두면 기존 응답 완료 갱신을 사용합니다.",
+    "description": "ChatGauge refresh mode hint"
+  },
+  "refresh_scope_hint": {
+    "message": "모든 대화방에 공통 적용됩니다. 변경은 다음 입력부터 적용하며, 진행 중 조회는 유지합니다.",
+    "description": "ChatGauge refresh scope hint"
+  },
+  "settings_loading": {
+    "message": "설정을 불러오는 중…",
+    "description": "ChatGauge settings loading"
+  },
+  "settings_autosave": {
+    "message": "선택은 이 브라우저에 자동 저장됩니다.",
+    "description": "ChatGauge settings autosave"
+  },
+  "settings_load_failed": {
+    "message": "설정을 불러오지 못했습니다. 창을 다시 열어주세요.",
+    "description": "ChatGauge settings load failed"
+  },
+  "select_format_hint": {
+    "message": "저장 형식을 하나 이상 선택해주세요.",
+    "description": "ChatGauge select format hint"
+  },
+  "settings_saving": {
+    "message": "저장 중…",
+    "description": "ChatGauge settings saving"
+  },
+  "settings_saved": {
+    "message": "저장했습니다.",
+    "description": "ChatGauge settings saved"
+  },
+  "settings_save_failed": {
+    "message": "저장하지 못했습니다. 다시 선택해주세요.",
+    "description": "ChatGauge settings save failed"
+  },
+  "filename_saved": {
+    "message": "저장했습니다. 다음 내보내기부터 적용됩니다.",
+    "description": "ChatGauge filename saved"
+  },
+  "refresh_saved": {
+    "message": "저장했습니다. 다음 입력부터 적용됩니다.",
+    "description": "ChatGauge refresh saved"
+  },
+  "preservation_warning": {
+    "message": "현재 서버에 저장된 내용입니다. 마지막 AI 응답이 없거나 덜 저장됐을 수 있으며, 응답 완료와 최신성은 보장하지 않습니다.",
+    "description": "ChatGauge preservation warning"
+  },
+  "verification_status": {
+    "message": "확인 상태",
+    "description": "ChatGauge verification status"
+  },
+  "export_information": {
+    "message": "내보내기 정보",
+    "description": "ChatGauge export information"
+  },
+  "exported_label": {
+    "message": "내보낸 시각",
+    "description": "ChatGauge exported label"
+  },
+  "conversation_id_label": {
+    "message": "대화 ID",
+    "description": "ChatGauge conversation id label"
+  },
+  "source_label": {
+    "message": "데이터 출처",
+    "description": "ChatGauge source label"
+  },
+  "messages_metadata": {
+    "message": "메시지: $1 (사용자 $2, AI $3)",
+    "description": "ChatGauge messages metadata"
+  },
+  "size_metadata": {
+    "message": "크기: $1자, UTF-8 $2바이트",
+    "description": "ChatGauge size metadata"
+  },
+  "summary_metadata": {
+    "message": "메시지 $1개 · $2자 · UTF-8 $3바이트",
+    "description": "ChatGauge summary metadata"
+  },
+  "empty_body": {
+    "message": "빈 메시지 본문",
+    "description": "ChatGauge empty body"
+  },
+  "annotation_ui": {
+    "message": "[추가 UI 요소]",
+    "description": "ChatGauge annotation ui"
+  },
+  "annotation_file": {
+    "message": "[파일 인용]",
+    "description": "ChatGauge annotation file"
+  },
+  "annotation_images": {
+    "message": "[이미지 모음]",
+    "description": "ChatGauge annotation images"
+  },
+  "writing_message": {
+    "message": "메시지",
+    "description": "ChatGauge writing message"
+  },
+  "writing_document": {
+    "message": "문서",
+    "description": "ChatGauge writing document"
+  },
+  "plain_text": {
+    "message": "일반 텍스트",
+    "description": "ChatGauge plain text"
+  },
+  "attached_image": {
+    "message": "첨부 이미지",
+    "description": "ChatGauge attached image"
+  },
+  "send_key_heading": {
+    "message": "추가 전송키",
+    "description": "Optional custom send shortcut setting"
+  },
+  "send_key_hint": {
+    "message": "ChatGPT의 전송키를 바꿨다면 입력란을 선택하고 같은 키 조합을 누르세요. 문자키 또는 Enter 조합 하나를 등록합니다. ChatGPT의 전송키와 기존 Enter 감지는 바꾸지 않으며, 모든 대화에 적용됩니다.",
+    "description": "Instructions and scope for additional send detection"
+  },
+  "send_key_placeholder": {
+    "message": "키 조합 누르기",
+    "description": "Empty shortcut capture field"
+  },
+  "send_key_clear": {
+    "message": "해제",
+    "description": "Clear the additional send shortcut"
+  },
+  "send_key_invalid": {
+    "message": "문자키 또는 Enter 조합을 눌러주세요. 삭제·취소·이동 키는 등록하지 않습니다.",
+    "description": "Unsupported shortcut capture feedback"
+  },
+  "send_key_saved": {
+    "message": "추가 전송키 설정을 저장했습니다. 다음 키 입력부터 적용됩니다.",
+    "description": "Additional send shortcut saved"
+  },
+  "image_note": {
+    "message": "[이미지: $1]",
+    "description": "ChatGauge image note"
+  },
+  "view_opened": {
+    "message": "펼친 시각: $1",
+    "description": "Conversation view view_opened"
+  },
+  "view_page_title": {
+    "message": "ChatGauge 대화",
+    "description": "Conversation view view_page_title"
+  },
+  "view_document_label": {
+    "message": "펼친 대화",
+    "description": "Conversation view view_document_label"
+  },
+  "view_again_hint": {
+    "message": "임시로 펼친 문서입니다. 채팅방에서 펼쳐보기를 눌러 다시 열어 주세요.",
+    "description": "Conversation view view_again_hint"
+  },
+  "expand_preparing": {
+    "message": "펼치는 중…",
+    "description": "Conversation view expand_preparing"
+  },
+  "expand_preparing_hint": {
+    "message": "현재 대화를 조회해 펼쳐보기를 준비하는 중…",
+    "description": "Conversation view expand_preparing_hint"
+  },
+  "expand_retry": {
+    "message": "다시 펼치기",
+    "description": "Conversation view expand_retry"
+  },
+  "expand_failed_hint": {
+    "message": "대화를 펼치지 못했습니다 ($1). 펼쳐보기를 눌러 다시 시도하세요.",
+    "description": "Conversation view expand_failed_hint"
+  }
+}

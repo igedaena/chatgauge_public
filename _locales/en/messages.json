@@ -1,0 +1,378 @@
+{
+  "extension_description": {
+    "message": "Measure and export the text stored in the active ChatGPT conversation.",
+    "description": "ChatGauge extension description"
+  },
+  "options_title": {
+    "message": "ChatGauge settings",
+    "description": "ChatGauge options title"
+  },
+  "measuring": {
+    "message": "Measuring…",
+    "description": "ChatGauge measuring"
+  },
+  "needs_verification": {
+    "message": "Needs verification",
+    "description": "ChatGauge needs verification"
+  },
+  "usage_unverified": {
+    "message": "Usage unverified",
+    "description": "ChatGauge usage unverified"
+  },
+  "automatic_measure_hint": {
+    "message": "Automatically measures conversations.",
+    "description": "ChatGauge automatic measure hint"
+  },
+  "measure_again_hint": {
+    "message": "Click to measure again",
+    "description": "ChatGauge measure again hint"
+  },
+  "response_wait_hint": {
+    "message": "Measures the full conversation after the AI response completes.",
+    "description": "ChatGauge response wait hint"
+  },
+  "character_count": {
+    "message": "$1 chars",
+    "description": "ChatGauge character count"
+  },
+  "character_unit": {
+    "message": "chars",
+    "description": "ChatGauge character unit"
+  },
+  "screen_number": {
+    "message": "On-screen $1",
+    "description": "ChatGauge screen number"
+  },
+  "baseline_success_hint": {
+    "message": "Server data loaded · Checkpoint updated · Completion and freshness of the latest AI response are unverified",
+    "description": "ChatGauge baseline success hint"
+  },
+  "full_success_hint": {
+    "message": "Active branch restored from the full conversation data",
+    "description": "ChatGauge full success hint"
+  },
+  "dom_success_hint": {
+    "message": "Supplementary measurement of messages loaded on this page only ($1)",
+    "description": "ChatGauge dom success hint"
+  },
+  "message_count": {
+    "message": "$1 messages",
+    "description": "ChatGauge message count"
+  },
+  "user_count": {
+    "message": "$1 user messages",
+    "description": "ChatGauge user count"
+  },
+  "assistant_count": {
+    "message": "$1 AI messages",
+    "description": "ChatGauge assistant count"
+  },
+  "empty_count": {
+    "message": "$1 empty messages",
+    "description": "ChatGauge empty count"
+  },
+  "baseline_loading_hint": {
+    "message": "Updates the checkpoint from data currently stored on the server without waiting for the response to complete.",
+    "description": "ChatGauge baseline loading hint"
+  },
+  "baseline_failed_hint": {
+    "message": "Could not update the checkpoint. The previous reference value is retained.",
+    "description": "ChatGauge baseline failed hint"
+  },
+  "baseline_export_cancelled_hint": {
+    "message": "Checkpoint loading was stopped for export. The previous reference value is retained.",
+    "description": "ChatGauge baseline export cancelled hint"
+  },
+  "verification_exhausted_hint": {
+    "message": "Could not verify the latest response within the automatic verification budget.",
+    "description": "ChatGauge verification exhausted hint"
+  },
+  "admission_rejected_hint": {
+    "message": "The latest user message could not be found in the current server data. The previous reference value is retained.",
+    "description": "ChatGauge admission rejected hint"
+  },
+  "measurement_failed_hint": {
+    "message": "Could not read either the full conversation data or the on-screen messages ($1; $2).",
+    "description": "ChatGauge measurement failed hint"
+  },
+  "conversation_loading_hint": {
+    "message": "Loads the server data once the conversation is created.",
+    "description": "ChatGauge conversation loading hint"
+  },
+  "return_cancelled_hint": {
+    "message": "Checkpoint loading was stopped on returning to this page. The freshness of the previous reference value is unverified.",
+    "description": "ChatGauge return cancelled hint"
+  },
+  "unavailable_title": {
+    "message": "Verification unavailable · $1",
+    "description": "ChatGauge unavailable title"
+  },
+  "input_recovery_hint": {
+    "message": "Server data unverified · Sending your next message will load the server data again.",
+    "description": "ChatGauge input recovery hint"
+  },
+  "automatic_recovery_hint": {
+    "message": "Automatic verification unsuccessful · Your next message will trigger a checkpoint recovery attempt using server data.",
+    "description": "ChatGauge automatic recovery hint"
+  },
+  "next_verification_hint": {
+    "message": "The freshness of the current usage is unverified · Automatic verification will resume with your next message.",
+    "description": "ChatGauge next verification hint"
+  },
+  "manual_recovery_hint": {
+    "message": "Click the usage to refresh manually now.",
+    "description": "ChatGauge manual recovery hint"
+  },
+  "expand_button": {
+    "message": "View",
+    "description": "ChatGauge open conversation document button"
+  },
+  "expand_hint": {
+    "message": "Open the conversation as a document.",
+    "description": "ChatGauge open conversation document hint"
+  },
+  "expand_unconnected_hint": {
+    "message": "Document view is not connected yet.",
+    "description": "ChatGauge document view unavailable during UI preparation"
+  },
+  "export_button": {
+    "message": "Export",
+    "description": "ChatGauge export button"
+  },
+  "export_preparing": {
+    "message": "Preparing files…",
+    "description": "ChatGauge export preparing"
+  },
+  "export_retry": {
+    "message": "Retry export",
+    "description": "ChatGauge export retry"
+  },
+  "export_initial_hint": {
+    "message": "Loads the full conversation again and saves it in the selected formats.",
+    "description": "ChatGauge export initial hint"
+  },
+  "export_failed_hint": {
+    "message": "Not saved ($1). Click to load the data again.",
+    "description": "ChatGauge export failed hint"
+  },
+  "export_hint": {
+    "message": "Loads and saves the current server data. Unverified completion notices are included inside files; the _unchecked filename marker is optional in settings.",
+    "description": "ChatGauge export hint"
+  },
+  "export_formats": {
+    "message": "Export formats",
+    "description": "ChatGauge export formats"
+  },
+  "export_formats_hint": {
+    "message": "Use the Export button in the conversation to save the selected formats. Multiple formats are bundled into one ZIP file.",
+    "description": "ChatGauge export formats hint"
+  },
+  "filename_heading": {
+    "message": "Filename",
+    "description": "ChatGauge filename heading"
+  },
+  "options_open_hint": {
+    "message": "Open ChatGauge settings",
+    "description": "Home name button opens the existing options page"
+  },
+  "options_open_failed_hint": {
+    "message": "Could not open settings. Click again or use the ChatGauge icon in the Firefox toolbar.",
+    "description": "Home options opening failed without changing the meter"
+  },
+  "include_date": {
+    "message": "Include date",
+    "description": "ChatGauge include date"
+  },
+  "include_time": {
+    "message": "Include time",
+    "description": "ChatGauge include time"
+  },
+  "include_unchecked": {
+    "message": "Include _unchecked for unverified completion",
+    "description": "ChatGauge include unchecked filename marker"
+  },
+  "filename_hint": {
+    "message": "Applies to your next export. Dates and times use UTC. Turn all three off to use only the conversation title. Unverified completion notices inside exported files remain.",
+    "description": "ChatGauge filename hint"
+  },
+  "refresh_heading": {
+    "message": "Refresh behavior",
+    "description": "ChatGauge refresh heading"
+  },
+  "update_on_input": {
+    "message": "Refresh on user input",
+    "description": "ChatGauge update on input"
+  },
+  "refresh_mode_hint": {
+    "message": "When enabled, your messages trigger a server-data refresh without waiting for the AI response to complete. The latest response may not be reflected until your next message. When disabled, refreshes follow response completion.",
+    "description": "ChatGauge refresh mode hint"
+  },
+  "refresh_scope_hint": {
+    "message": "Applies to all conversations. Changes take effect with your next message; loading already in progress continues.",
+    "description": "ChatGauge refresh scope hint"
+  },
+  "settings_loading": {
+    "message": "Loading settings…",
+    "description": "ChatGauge settings loading"
+  },
+  "settings_autosave": {
+    "message": "Your choices are saved automatically in this browser.",
+    "description": "ChatGauge settings autosave"
+  },
+  "settings_load_failed": {
+    "message": "Could not load settings. Please reopen this window.",
+    "description": "ChatGauge settings load failed"
+  },
+  "select_format_hint": {
+    "message": "Select at least one export format.",
+    "description": "ChatGauge select format hint"
+  },
+  "settings_saving": {
+    "message": "Saving…",
+    "description": "ChatGauge settings saving"
+  },
+  "settings_saved": {
+    "message": "Saved.",
+    "description": "ChatGauge settings saved"
+  },
+  "settings_save_failed": {
+    "message": "Could not save. Please select your preferences again.",
+    "description": "ChatGauge settings save failed"
+  },
+  "filename_saved": {
+    "message": "Saved. Applies to your next export.",
+    "description": "ChatGauge filename saved"
+  },
+  "refresh_saved": {
+    "message": "Saved. Applies with your next message.",
+    "description": "ChatGauge refresh saved"
+  },
+  "preservation_warning": {
+    "message": "This export contains the data currently stored on the server. The latest AI response may be missing or only partially saved. Response completion and freshness are not guaranteed.",
+    "description": "ChatGauge preservation warning"
+  },
+  "verification_status": {
+    "message": "Verification status",
+    "description": "ChatGauge verification status"
+  },
+  "export_information": {
+    "message": "Export information",
+    "description": "ChatGauge export information"
+  },
+  "exported_label": {
+    "message": "Exported",
+    "description": "ChatGauge exported label"
+  },
+  "conversation_id_label": {
+    "message": "Conversation ID",
+    "description": "ChatGauge conversation id label"
+  },
+  "source_label": {
+    "message": "Source",
+    "description": "ChatGauge source label"
+  },
+  "messages_metadata": {
+    "message": "Messages: $1 (user $2, assistant $3)",
+    "description": "ChatGauge messages metadata"
+  },
+  "size_metadata": {
+    "message": "Size: $1 characters, $2 UTF-8 bytes",
+    "description": "ChatGauge size metadata"
+  },
+  "summary_metadata": {
+    "message": "$1 messages · $2 characters · $3 UTF-8 bytes",
+    "description": "ChatGauge summary metadata"
+  },
+  "empty_body": {
+    "message": "Empty message body",
+    "description": "ChatGauge empty body"
+  },
+  "annotation_ui": {
+    "message": "[Additional UI element]",
+    "description": "ChatGauge annotation ui"
+  },
+  "annotation_file": {
+    "message": "[File citation]",
+    "description": "ChatGauge annotation file"
+  },
+  "annotation_images": {
+    "message": "[Image group]",
+    "description": "ChatGauge annotation images"
+  },
+  "writing_message": {
+    "message": "Message",
+    "description": "ChatGauge writing message"
+  },
+  "writing_document": {
+    "message": "Document",
+    "description": "ChatGauge writing document"
+  },
+  "plain_text": {
+    "message": "Plain text",
+    "description": "ChatGauge plain text"
+  },
+  "attached_image": {
+    "message": "Attached image",
+    "description": "ChatGauge attached image"
+  },
+  "send_key_heading": {
+    "message": "Additional send shortcut",
+    "description": "Optional custom send shortcut setting"
+  },
+  "send_key_hint": {
+    "message": "If you changed ChatGPT's send shortcut, select the field and press the same combination. Register one character key or Enter, with optional modifiers. This does not change ChatGPT's shortcut or the existing Enter detection. Applies to all conversations.",
+    "description": "Instructions and scope for additional send detection"
+  },
+  "send_key_placeholder": {
+    "message": "Press a key combination",
+    "description": "Empty shortcut capture field"
+  },
+  "send_key_clear": {
+    "message": "Clear",
+    "description": "Clear the additional send shortcut"
+  },
+  "send_key_invalid": {
+    "message": "Press a character key or Enter, with optional modifiers. Delete, cancel, and navigation keys are not supported.",
+    "description": "Unsupported shortcut capture feedback"
+  },
+  "send_key_saved": {
+    "message": "Additional send shortcut saved. Applies to your next key press.",
+    "description": "Additional send shortcut saved"
+  },
+  "image_note": {
+    "message": "[Image: $1]",
+    "description": "ChatGauge image note"
+  },
+  "view_opened": {
+    "message": "Opened: $1",
+    "description": "Conversation view view_opened"
+  },
+  "view_page_title": {
+    "message": "ChatGauge conversation",
+    "description": "Conversation view view_page_title"
+  },
+  "view_document_label": {
+    "message": "Expanded conversation",
+    "description": "Conversation view view_document_label"
+  },
+  "view_again_hint": {
+    "message": "This view is temporary. Return to the conversation and select View to open it again.",
+    "description": "Conversation view view_again_hint"
+  },
+  "expand_preparing": {
+    "message": "Opening…",
+    "description": "Conversation view expand_preparing"
+  },
+  "expand_preparing_hint": {
+    "message": "Preparing a fresh conversation view…",
+    "description": "Conversation view expand_preparing_hint"
+  },
+  "expand_retry": {
+    "message": "Retry view",
+    "description": "Conversation view expand_retry"
+  },
+  "expand_failed_hint": {
+    "message": "Could not open the conversation view ($1). Select View to try again.",
+    "description": "Conversation view expand_failed_hint"
+  }
+}

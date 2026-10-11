@@ -1,0 +1,14 @@
+# Generated packages and development artifacts
+/dist/
+/output/
+/coverage/
+node_modules/
+*.log
+.DS_Store
+Thumbs.db
+
+# Local credentials and conversation material
+.env
+.env.*
+/samples/
+/records/

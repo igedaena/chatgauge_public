@@ -1,0 +1,18 @@
+:root { color-scheme: light dark; font: 14px/1.6 system-ui, sans-serif; }
+body { margin: 0; min-width: 280px; background: Canvas; color: CanvasText; }
+main { padding: 20px; max-width: 420px; }
+h1 { margin: 0 0 16px; font-size: 18px; }
+fieldset { border: 0; padding: 0; margin: 0; }
+legend { font-weight: 600; margin-bottom: 8px; }
+label { display: flex; align-items: center; gap: 10px; padding: 8px 0; cursor: pointer; }
+label span:not([data-i18n]) { margin-left: auto; color: GrayText; font-size: 12px; }
+input { accent-color: #7c3aed; width: 16px; height: 16px; }
+.key-setting { display: flex; gap: 8px; }
+.key-setting input { flex: 1; min-width: 0; width: auto; height: 34px;
+  box-sizing: border-box; padding: 6px 8px; font: inherit; color: CanvasText;
+  background: Canvas; border: 1px solid GrayText; border-radius: 4px; }
+.key-setting button { flex-shrink: 0; font: inherit; padding: 4px 10px; cursor: pointer; }
+.key-setting :focus-visible { outline: 2px solid #7c3aed; outline-offset: 2px; }
+.key-setting :disabled { cursor: default; opacity: .65; }
+.hint { color: GrayText; font-size: 12px; margin-top: 16px; }
+#status { font-size: 12px; margin: 8px 0 0; min-height: 20px; }

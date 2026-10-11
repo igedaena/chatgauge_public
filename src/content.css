@@ -1,0 +1,11 @@
+#chatcouter-root {
+  position: fixed;
+  width: max-content;
+  visibility: hidden;
+  z-index: 2147483647;
+}
+
+#chatcouter-root[hidden] {
+  display: none !important;
+}
+
