@@ -25,8 +25,8 @@ Requires Firefox 140 or later and a signed-in ChatGPT account.
 [Firefox 부가 기능 스토어](https://addons.mozilla.org/addon/chatgauge/)에서 설치할 수 있습니다.
 Firefox 140 이상과 ChatGPT 로그인이 필요합니다.
 
-The current AMO release is 0.3.3. This source is version 0.3.4, prepared for the
-next update. GitHub release assets are being prepared.
+The current AMO release is 0.3.3. This source is version 0.3.4, submitted to AMO
+and awaiting approval. GitHub release assets are being prepared.
 See [CHANGELOG.md](CHANGELOG.md) for changes between versions.
 
 ## Feature details

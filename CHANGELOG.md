@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.3.4 — Prepared for submission
+## 0.3.4 — Submitted for review, 2026-10-14
 
 - Refresh the extension icon across supported sizes.
 - Build the meter with native DOM APIs instead of `innerHTML`, preserving its appearance and behavior.
