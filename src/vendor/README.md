@@ -11,7 +11,10 @@
 The bundled file was compared byte-for-byte with `package/lib/marked.umd.js`
 from the official npm archive during release preparation on 2026-10-11.
 
-The extension uses only the Markdown lexer. `src/exporters/html.js` renders an
+The extension uses only the Markdown lexer. `src/exporters/display-markup.js`
+shares known annotation/writing classification between HTML and Markdown;
+Markdown edits only aligned source spans and keeps literal code/examples.
+`src/exporters/html.js` renders an
 allowlist of token types and escapes text, code and raw HTML. It never inserts
 Marked's default HTML output. Links permit only absolute HTTP(S) and mailto
 destinations; images become text placeholders. The exported file contains no

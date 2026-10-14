@@ -42,26 +42,16 @@ function harness(formats = ["md"], { inputMode = false, modeRead, filenameOption
   const timers = new Map();
   let timerId = 0;
   let preferenceListener;
-  class Element {
-    constructor() { this.listeners = {}; this.dataset = {}; }
-    addEventListener(name, handler) { this.listeners[name] = handler; }
-    querySelector(selector) { return nodes[selector] || null; }
-    querySelectorAll() { return []; }
-    closest() { return null; }
-    setAttribute(name, value) { (this.attributes ??= {})[name] = value; }
-    attachShadow() { this.shadowRoot = new Element(); return this.shadowRoot; }
+  const MeterElement = require("./helpers/meter-dom.cjs")(nodes);
+  class Element extends MeterElement {
     click() { downloads.push(this.download); }
-    append(node) { this.textContent = (this.textContent || "") + node.textContent; }
-    remove() {}
-  }
-  for (const selector of [".controls", ".measure", ".primary", ".secondary", ".expand", "#expand-description", ".export", ".preserve", ".preserve-note"]) {
-    nodes[selector] = new Element();
   }
   const document = {
     title: "Fallback title - ChatGPT",
     host: null,
     getElementById() { return this.host; },
-    createElement() { return new Element(); },
+    createElement(tag) { return new Element(tag); },
+    createElementNS(ns, tag) { return new Element(tag, ns); },
     querySelector() { return null; },
     addEventListener(name, handler) { handlers[name] = handler; },
     documentElement: {
@@ -291,7 +281,7 @@ async function enterBaselineRecovery(h) {
     await h.runTimer();
   }
   assert.equal(h.unverified(), 1);
-  assert.doesNotMatch(h.context.document.host.shadowRoot.innerHTML, /class="reliability"/);
+  assert.equal(h.context.document.host.shadowRoot.querySelector(".reliability"), null);
   assert.match(h.nodes[".measure"].title, /자동 확인 미확인/);
   assert.match(h.nodes[".measure"].title, /다음 메시지를 보내면.*기준점 자동 복구를 시도/);
   assert.match(h.nodes[".measure"].title, /클릭하면 지금 수동으로 갱신/);
@@ -1984,5 +1974,37 @@ test("verification diagnostics distinguish network time budget from retry limit 
     assert.equal(rejected.elapsedMs, delay);
     assert.equal(events.findLast(e => e.event === "response-complete").operation, "response-observation");
     assert.equal(h.unverified(), 1);
+  }
+});
+
+test("shared MD/HTML display cleanup in a three-format Export preserves JSON, original totals and unchecked notices in both locales", async () => {
+  for (const locale of ["ko", "en"]) {
+    const h = harness(["md", "json", "html"], { locale });
+    await flushAsync();
+    const marker = '\uE200filecite\uE202synthetic-file\uE201';
+    const source = ':::writing{variant="document" title="Synthetic"}\nBody ' + marker + '\n:::';
+    h.result.messages[1].text = source;
+    h.result.completion = { currentNodeStatus: "in_progress" };
+    const before = JSON.stringify(h.result.messages);
+    const totals = h.context.Chatcouter.model.measureConversation(h.result.messages);
+    const label = h.context.Chatcouter.i18n.t("annotation_file");
+    await h.click();
+    assert.equal(h.requests(), 1);
+    assert.equal(h.downloads.length, 1);
+    const entries = readZip(await h.blobs[0].arrayBuffer());
+    const md = entries.find(entry => entry.filename.endsWith(".md")).contents;
+    const html = entries.find(entry => entry.filename.endsWith(".html")).contents;
+    const json = JSON.parse(entries.find(entry => entry.filename.endsWith(".json")).contents);
+    assert.ok(!md.includes(':::writing')); assert.ok(!md.includes(marker));
+    assert.ok(md.includes(label.slice(1, -1)));
+    assert.ok(html.includes('class="writing-card"')); assert.ok(html.includes(label));
+    assert.equal(json.conversation.messages[1].text, source);
+    assert.deepEqual(json.conversation.totals, JSON.parse(JSON.stringify(totals)));
+    assert.ok(md.includes(totals.characters + " characters, " + totals.utf8Bytes + " UTF-8 bytes"));
+    const notice = json.conversation.preservation.warning;
+    assert.ok(md.includes(notice)); assert.ok(html.includes(notice));
+    assert.equal(JSON.stringify(h.result.messages), before);
+    assert.equal(h.unverified(), 0);
+    assert.ok(entries.every(entry => entry.filename.includes('_unchecked')));
   }
 });

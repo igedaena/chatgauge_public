@@ -6,6 +6,7 @@ globalThis.browser = { i18n: require("./helpers/i18n.cjs")("en") };
 require("../src/i18n.js");
 require("../src/model.js");
 globalThis.marked = require("../src/vendor/marked.umd.js");
+require("../src/exporters/display-markup.js");
 require("../src/exporters/html.js");
 const { createHtmlExport } = globalThis.Chatcouter.htmlExporter;
 
@@ -287,4 +288,13 @@ test("complete chat_message cards reuse safe writing rendering and incomplete va
     assert.ok(result.includes(":::writing"));
   }
   assert.match(createHtmlExport({ messages: [{ role: "assistant", text: ':::writing{variant="chat_message"}\n본문\n:::' }] }), /writing-title">Message<\/div>/);
+});
+
+test("HTML preserves escaped, incomplete and nested unknown annotation examples as literal source", () => {
+  const marker = '\uE200filecite\uE202synthetic\uE201';
+  for (const text of ['\\' + marker, '\uE200cite\uE202unfinished', '\uE200unknown\uE202' + marker]) {
+    const html = createHtmlExport({ messages: [{role: "assistant", text}] });
+    assert.ok(html.includes(text));
+    assert.ok(!html.includes("File citation"));
+  }
 });

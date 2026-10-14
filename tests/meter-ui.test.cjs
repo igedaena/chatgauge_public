@@ -6,24 +6,19 @@ const vm = require("node:vm");
 const test = require("node:test");
 const mockI18n = require("./helpers/i18n.cjs");
 
-function harness(locale, connected = false, optionsConnected = false) {
+function harness(locale, connected = false, optionsConnected = false, literalTranslation) {
   const nodes = {};
   const calls = { measure: 0, export: 0, expand: 0, options: 0, schedule: 0 };
-  class Element {
-    constructor() { this.dataset = {}; this.listeners = {}; this.attributes = {}; }
-    querySelector(selector) { return nodes[selector]; }
-    setAttribute(key, value) { this.attributes[key] = value; }
-    addEventListener(key, value) { this.listeners[key] = value; }
-    attachShadow() { return this.shadowRoot = new Element(); }
-    append(node) { this.textContent += node.textContent; }
-    click() { if (!this.disabled && !this.hidden) this.listeners.click?.(); }
-  }
-  for (const selector of [".controls", ".measure", ".primary", ".secondary", ".export", ".expand", "#expand-description"]) {
-    nodes[selector] = new Element();
-  }
+  const Element = require("./helpers/meter-dom.cjs")(nodes);
   let host = null;
-  const document = { getElementById: () => host, createElement: () => new Element(), documentElement: { append: node => { host = node; } } };
-  const context = vm.createContext({ browser: { i18n: mockI18n(locale) } });
+  const document = { getElementById: () => host, createElement: tag => new Element(tag), createElementNS: (ns, tag) => new Element(tag, ns), documentElement: { append: node => { host = node; } } };
+  const i18n = mockI18n(locale);
+  if (literalTranslation) {
+    const getMessage = i18n.getMessage;
+    i18n.getMessage = (key, args) => ["automatic_measure_hint", "expand_button", "export_initial_hint", "export_button"].includes(key)
+      ? literalTranslation : getMessage(key, args);
+  }
+  const context = vm.createContext({ browser: { i18n } });
   vm.runInContext(fs.readFileSync(path.join(__dirname, "../src/i18n.js"), "utf8"), context);
   context.Chatcouter.uiPosition = { create: () => ({ schedule: () => calls.schedule++, destroy() {} }) };
   vm.runInContext(fs.readFileSync(path.join(__dirname, "../src/meter-ui.js"), "utf8"), context);
@@ -35,7 +30,7 @@ function harness(locale, connected = false, optionsConnected = false) {
     display: { primary: "1,234 chars", charactersText: "1,234", secondary: "4.5 KB" }, title: "Synthetic checkpoint",
     baselineBusy: false, exportBusy: false, exportError: "", recoveryFailureStreak: 0,
     baselineFailureThreshold: 3, unverifiedResponseStreak: 0, automaticRecoveryThreshold: 3, updateOnUserInput: false };
-  return { ui, nodes, calls, view, t: context.Chatcouter.i18n.t };
+  return { ui, nodes, calls, view, document, t: context.Chatcouter.i18n.t };
 }
 
 test("old callers keep refresh/export and an explained disabled document control in both locales", () => {
@@ -153,5 +148,36 @@ test("view preparation exclusively locks three actions without changing Export l
     assert.ok(h.nodes[".expand"].title.includes("view-tab-create-failed"));
     h.ui.render(h.view);
     assert.equal(h.nodes[".expand"].textContent, h.t("expand_button"));
+  }
+});
+
+test("native meter DOM preserves CSS, SVG namespaces, action structure and literal translations", () => {
+  const literal = '<img src=x onerror=alert(1)> & "quoted"';
+  for (const locale of ["ko", "en"]) {
+    const h = harness(locale, true, true, literal);
+    h.ui.render(h.view);
+    const shadow = h.document.getElementById().shadowRoot;
+    assert.deepEqual(shadow.children.map(node => node.tagName), ["style", "span"]);
+    const css = shadow.querySelector("style").textContent;
+    assert.ok(css.includes('grid-template-columns: 46px minmax(84px, max-content) max-content'));
+    assert.ok(css.includes('@media (prefers-reduced-motion: reduce)'));
+    assert.ok(css.includes('translateX(-6px)'));
+    const svg = shadow.querySelector("svg");
+    assert.equal(svg.namespaceURI, "http://www.w3.org/2000/svg");
+    assert.equal(svg.attributes.viewBox, "0 0 45 58");
+    for (const tag of ["g", "path", "polygon"]) {
+      assert.equal(svg.querySelectorAll(tag).length, 2);
+      for (const node of svg.querySelectorAll(tag)) assert.equal(node.namespaceURI, svg.namespaceURI);
+    }
+    assert.equal(svg.querySelector(".idle-shape").attributes.transform, "translate(-10.6743 3)");
+    assert.equal(shadow.querySelectorAll("button").length, 3);
+    assert.equal(h.nodes[".expand"].attributes["aria-describedby"], "expand-description");
+    assert.equal(h.nodes[".expand"].textContent, literal);
+    assert.equal(h.nodes[".export"].textContent, literal);
+    assert.equal(shadow.querySelectorAll("img").length, 0);
+    assert.equal(h.nodes[".primary"].children[0].className, "unit");
+    h.ui.render(h.view);
+    assert.equal(h.nodes[".primary"].children.length, 1);
+    assert.equal(h.nodes[".primary"].textContent, "1,234" + h.t("character_unit"));
   }
 });

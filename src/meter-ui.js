@@ -51,8 +51,14 @@
       host.setAttribute("data-chatcouter-owned", "true");
 
       const shadow = host.attachShadow({ mode: "open" });
-      shadow.innerHTML = `
-      <style>
+      function element(tag, attributes = {}, text, svg = false) {
+        const node = svg ? document.createElementNS("http://www.w3.org/2000/svg", tag)
+          : document.createElement(tag);
+        for (const [name, value] of Object.entries(attributes)) node.setAttribute(name, value);
+        if (text !== undefined) node.textContent = text;
+        return node;
+      }
+      const style = element("style", {}, `
         :host { color-scheme: inherit; font-family: system-ui, sans-serif; }
         .controls {
           --ink: light-dark(#34383d, #e5e7eb); --muted: light-dark(#6c727a, #aeb5be);
@@ -128,28 +134,29 @@
           .body { stroke: CanvasText; } .light { fill: Highlight; filter: none; }
           .ground { background: CanvasText; }
         }
-      </style>
-      <span class="controls" data-mode="idle" data-indicator="idle">
-        <svg class="symbol" viewBox="0 0 45 58" aria-hidden="true">
-          <g class="idle-shape" transform="translate(-10.6743 3)">
-            <path class="body" d="M21.4256 45 L26.656 25.48 H33.344 L38.5744 45"/>
-            <polygon class="light" points="30,13 32.8081,23.48 27.1919,23.48"/>
-          </g>
-          <g class="active-shape">
-            <path class="body" d="M10.7513 53 L25.3005 27.8 H35 V53"/>
-            <polygon class="light" points="35,11 35,24.8 27.0326,24.8"/>
-          </g>
-        </svg>
-        <span class="ground" aria-hidden="true"></span>
-        <button class="measure" type="button" data-state="idle" aria-live="polite" title="${t("automatic_measure_hint")}">
-          <span class="primary">ChatGauge</span>
-          <span class="secondary"></span>
-        </button>
-        <button class="action expand" type="button" hidden disabled aria-describedby="expand-description">${t("expand_button")}</button>
-        <span class="action-description" id="expand-description"></span>
-        <button class="action export" type="button" hidden title="${t("export_initial_hint")}">${t("export_button")}</button>
-      </span>
-    `;
+`);
+      const controls = element("span", { class: "controls", "data-mode": "idle", "data-indicator": "idle" });
+      const symbol = element("svg", { class: "symbol", viewBox: "0 0 45 58", "aria-hidden": "true" }, undefined, true);
+      const idleShape = element("g", { class: "idle-shape", transform: "translate(-10.6743 3)" }, undefined, true);
+      idleShape.append(
+        element("path", { class: "body", d: "M21.4256 45 L26.656 25.48 H33.344 L38.5744 45" }, undefined, true),
+        element("polygon", { class: "light", points: "30,13 32.8081,23.48 27.1919,23.48" }, undefined, true));
+      const activeShape = element("g", { class: "active-shape" }, undefined, true);
+      activeShape.append(
+        element("path", { class: "body", d: "M10.7513 53 L25.3005 27.8 H35 V53" }, undefined, true),
+        element("polygon", { class: "light", points: "35,11 35,24.8 27.0326,24.8" }, undefined, true));
+      symbol.append(idleShape, activeShape);
+      const measure = element("button", { class: "measure", type: "button", "data-state": "idle",
+        "aria-live": "polite", title: t("automatic_measure_hint") });
+      measure.append(element("span", { class: "primary" }, "ChatGauge"), element("span", { class: "secondary" }));
+      const expand = element("button", { class: "action expand", type: "button", "aria-describedby": "expand-description" }, t("expand_button"));
+      expand.hidden = true;
+      expand.disabled = true;
+      const exportControl = element("button", { class: "action export", type: "button", title: t("export_initial_hint") }, t("export_button"));
+      exportControl.hidden = true;
+      controls.append(symbol, element("span", { class: "ground", "aria-hidden": "true" }), measure,
+        expand, element("span", { class: "action-description", id: "expand-description" }), exportControl);
+      shadow.append(style, controls);
 
       const measureButton = shadow.querySelector(".measure");
       measureButton.addEventListener("click", () => {

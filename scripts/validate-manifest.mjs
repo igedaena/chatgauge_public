@@ -16,7 +16,7 @@ for (const value of [manifest.description, manifest.action.default_title]) {
   assert.ok(catalogs[0][value.match(/^__MSG_(\w+)__$/)?.[1]], "Manifest locale key must exist");
 }
 for (const file of ["src/content.js", "src/meter-ui.js", "src/options/options.js", "src/options/options.html",
-  "src/exporters/fresh.js", "src/exporters/markdown.js", "src/exporters/html.js", "src/viewer/viewer.js"]) {
+  "src/exporters/fresh.js", "src/exporters/display-markup.js", "src/exporters/markdown.js", "src/exporters/html.js", "src/viewer/viewer.js"]) {
   const source = await readFile(new URL(`../${file}`, import.meta.url), "utf8");
   for (const match of source.matchAll(/\bt\("([\w]+)"|data-i18n="([\w]+)"/g)) {
     assert.ok(catalogs[0][match[1] || match[2]], `${file} locale key must exist: ${match[1] || match[2]}`);
@@ -68,8 +68,9 @@ for (const entry of manifest.content_scripts) {
 export function validateContentScriptDependencies(entry) {
   const dependencies = {
     "src/exporters/json.js": ["src/model.js"],
-    "src/exporters/markdown.js": ["src/i18n.js", "src/model.js"],
-    "src/exporters/html.js": ["src/i18n.js", "src/model.js", "src/vendor/marked.umd.js"],
+    "src/exporters/display-markup.js": ["src/i18n.js", "src/vendor/marked.umd.js"],
+    "src/exporters/markdown.js": ["src/i18n.js", "src/model.js", "src/exporters/display-markup.js"],
+    "src/exporters/html.js": ["src/i18n.js", "src/model.js", "src/exporters/display-markup.js"],
     "src/adapters/chatgpt-api.js": ["src/model.js"],
     "src/adapters/chatgpt-dom.js": ["src/model.js"],
     "src/conversation-snapshot.js": ["src/adapters/chatgpt-api.js", "src/adapters/chatgpt-dom.js", "src/refresh-policy.js"],

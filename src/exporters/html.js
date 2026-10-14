@@ -18,112 +18,7 @@
     return escapeHtml(value).replace(/&amp;((?:#[0-9]+|#x[0-9a-f]+|[a-z][a-z0-9]*);)/gi, "&$1");
   }
 
-  const ANNOTATION_PATTERN = /\uE200(memcite|cite|url|genui|filecite|entity|image_group)(?:\uE202([^\uE201]*))?\uE201/;
-  const ANNOTATION_MASK_PATTERN = new RegExp(ANNOTATION_PATTERN.source, "g");
-
-  function annotationText(kind, payload) {
-    if (kind === "url") return payload.split("\uE202")[0];
-    if (kind === "genui") return t("annotation_ui");
-    if (kind === "filecite") return t("annotation_file");
-    if (kind === "entity" || kind === "image_group") {
-      let value;
-      try { value = JSON.parse(payload); }
-      catch { return undefined; } // Malformed widgets retain their literal source.
-      if (kind === "entity") {
-        return Array.isArray(value) && typeof value[1] === "string" && value[1].trim()
-          ? value[1] : undefined;
-      }
-      return value && typeof value === "object" && !Array.isArray(value) && Object.hasOwn(value, "query")
-        ? t("annotation_images") : undefined;
-    }
-    return "";
-  }
-
-  // Read a complete annotation before Markdown can split its label into tokens.
-  // Code spans/blocks remain literal because their own tokenizers consume them.
-  const markdown = new global.marked.Marked({
-    gfm: true,
-    breaks: true,
-    hooks: {
-      emStrongMask(masked) {
-        // Change only the parser's shadow text, retaining every UTF-16 offset.
-        // Marked has already masked code/escapes/links. Mask annotation payloads
-        // as well so their literal labels cannot terminate surrounding emphasis.
-        return masked.replace(ANNOTATION_MASK_PATTERN, raw => "a".repeat(raw.length))
-          .replace(/([\p{P}\p{S}])(\*{1,2})(?=[가-힣])/gu,
-            (raw, punctuation, marks) => punctuation === "*" ? raw
-              : "a".repeat(punctuation.length) + marks);
-      },
-    },
-    extensions: [{
-      name: "chatcouterWriting",
-      level: "block",
-      start: (text) => text.match(/^ {0,3}:::writing\{/m)?.index,
-      tokenizer(text) {
-        const opening = /^ {0,3}:::writing\{([^\n]*)\}[ \t]*\n/.exec(text);
-        const variant = /(?:^|\s)variant="(document|chat_message)"(?:\s|$)/.exec(opening?.[1] || "")?.[1];
-        if (!opening || !variant) return undefined;
-        const titleMatch = /(?:^|\s)title="((?:\\.|[^"\\])*)"/.exec(opening[1]);
-        let title = variant === "chat_message" ? t("writing_message") : t("writing_document");
-        if (titleMatch) {
-          try { title = JSON.parse(`"${titleMatch[1]}"`) || title; }
-          catch { return undefined; }
-        } else if (/(?:^|\s)title=/.test(opening[1])) return undefined;
-        const rest = text.slice(opening[0].length);
-        let offset = 0;
-        let fence = null;
-        let depth = 1;
-        let nested = false;
-        for (const line of rest.split("\n")) {
-          const fenceMatch = /^ {0,3}(`{3,}|~{3,})(.*)$/.exec(line);
-          if (fence) {
-            if (fenceMatch && fenceMatch[1][0] === fence.character
-              && fenceMatch[1].length >= fence.length && !fenceMatch[2].trim()) fence = null;
-          } else if (fenceMatch) {
-            fence = { character: fenceMatch[1][0], length: fenceMatch[1].length };
-          } else if (/^ {0,3}:::[ \t]*$/.test(line)) {
-            depth -= 1;
-            if (depth > 0) {
-              offset += line.length + 1;
-              continue;
-            }
-            const length = opening[0].length + offset + line.length
-              + (offset + line.length < rest.length ? 1 : 0);
-            if (nested) return { type: "chatcouterWritingLiteral", raw: text.slice(0, length) };
-            return {
-              type: "chatcouterWriting",
-              raw: text.slice(0, length),
-              title,
-              variant,
-              tokens: this.lexer.blockTokens(rest.slice(0, offset)),
-            };
-          } else if (/^ {0,3}:::writing\{/.test(line)) {
-            nested = true;
-            depth += 1;
-          }
-          offset += line.length + 1;
-        }
-        // Keep ambiguous nested blocks wholly literal, including their inner
-        // wrappers; otherwise the lexer could render an inner card on its own.
-        return nested ? { type: "chatcouterWritingLiteral", raw: text } : undefined;
-      },
-    }, {
-      name: "chatcouterAnnotation",
-      level: "inline",
-      start: (text) => text.match(ANNOTATION_PATTERN)?.index,
-      tokenizer(text) {
-        const match = ANNOTATION_PATTERN.exec(text);
-        if (!match || match.index !== 0) return undefined;
-        const label = annotationText(match[1], match[2] || "");
-        if (label === undefined) return undefined;
-        return {
-          type: "chatcouterAnnotation",
-          raw: match[0],
-          text: label,
-        };
-      },
-    }],
-  });
+  const { lexer } = namespace.displayMarkup;
 
   // Render only known Markdown tokens. Never pass raw HTML through the parser.
   function renderTokens(tokens) {
@@ -134,6 +29,7 @@
         case "text": return token.tokens ? inline()
           : escapeMarkdownText(token.text).replace(/\n/g, "<br>\n");
         case "chatcouterAnnotation": return escapeHtml(token.text);
+        case "chatcouterAnnotationLiteral": return escapeHtml(token.raw);
         case "chatcouterWriting": return `<section class="writing-card${token.variant === "chat_message" ? " message-card" : ""}"><div class="writing-title">${escapeHtml(token.title)}</div><div class="writing-body">${inline()}</div></section>\n`;
         case "chatcouterWritingLiteral": return `<p>${escapeHtml(token.raw).replace(/\n/g, "<br>\n")}</p>\n`;
         case "escape": return escapeHtml(token.text);
@@ -181,7 +77,7 @@
   }
 
   function renderMarkdown(text) {
-    return renderTokens(markdown.lexer(text));
+    return renderTokens(lexer(text));
   }
 
   function createHtmlExport({

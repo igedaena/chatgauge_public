@@ -5,6 +5,7 @@
   const { measureConversation } = namespace.model;
 
   const { t } = namespace.i18n;
+  const { cleanMarkdown } = namespace.displayMarkup;
 
   function headingText(value) {
     return String(value || "ChatGPT conversation")
@@ -46,7 +47,8 @@
         lines.push(message.createdAt);
         lines.push("");
       }
-      lines.push(message.text || "<!-- Empty message body -->");
+      lines.push(message.text ? message.role === "user" ? message.text : cleanMarkdown(message.text)
+        : "<!-- Empty message body -->");
       lines.push("");
     }
 

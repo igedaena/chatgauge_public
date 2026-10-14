@@ -1,6 +1,6 @@
 # ChatGauge data handling
 
-Last updated: 2026-10-11. This describes the source in version 0.3.3.
+Last updated: 2026-10-14. This describes the source in version 0.3.4.
 
 ## Conversation access
 

@@ -11,6 +11,9 @@ test("manifest validation rejects missing and late runtime dependencies", async 
     ["src/document-viewer.js", "src/content.js"],
     ["src/adapters/chatgpt-dom.js", "src/content.js"],
     ["src/vendor/marked.umd.js", "src/exporters/html.js"],
+    ["src/vendor/marked.umd.js", "src/exporters/display-markup.js"],
+    ["src/exporters/display-markup.js", "src/exporters/markdown.js"],
+    ["src/exporters/display-markup.js", "src/exporters/html.js"],
     ["src/model.js", "src/exporters/json.js"],
   ]) {
     const missing = entry.js.filter(file => file !== dependency);

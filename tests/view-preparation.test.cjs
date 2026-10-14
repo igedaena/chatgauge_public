@@ -3,7 +3,7 @@ const assert = require("node:assert/strict"), test = require("node:test"), fs = 
 const i18n = require("./helpers/i18n.cjs");
 function harness(locale) {
   const context = vm.createContext({ browser: { i18n: i18n(locale) }, TextEncoder });
-  for (const file of ["i18n.js", "model.js", "vendor/marked.umd.js", "exporters/html.js"]) vm.runInContext(fs.readFileSync(path.join(__dirname, "../src", file), "utf8"), context);
+  for (const file of ["i18n.js", "model.js", "vendor/marked.umd.js", "exporters/display-markup.js", "exporters/html.js"]) vm.runInContext(fs.readFileSync(path.join(__dirname, "../src", file), "utf8"), context);
   const result = { title: "Synthetic <title>", messages: [{ role: "user", text: "한글 <script>" }, { role: "assistant", text: "**answer**\n\n```js\nconst a = 1;\n```" }] };
   let calls = 0, snapshot = { ok: true, result, unchecked: false, reason: "full" };
   context.Chatcouter.conversationSnapshot = { readExport: async () => { calls++; return snapshot; } };
