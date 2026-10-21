@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.3.5 — Release candidate, 2026-10-21
+## 0.3.5 — 2026-10-21
 
 - Add locally stored user themes with validated ZIP import, built-in fallback,
   optional entry-time display and conversation-size background stages.

@@ -25,7 +25,7 @@ Requires Firefox 140 or later and a signed-in ChatGPT account.
 [Firefox 부가 기능 스토어](https://addons.mozilla.org/addon/chatgauge/)에서 설치할 수 있습니다.
 Firefox 140 이상과 ChatGPT 로그인이 필요합니다.
 
-This source prepares version 0.3.5. For published downloads,
+This source corresponds to version 0.3.5, approved on Firefox Add-ons. For published downloads,
 see [GitHub Releases](https://github.com/igedaena/chatgauge_public/releases).
 See [CHANGELOG.md](CHANGELOG.md) for changes between versions.
 
