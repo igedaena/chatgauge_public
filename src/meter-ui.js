@@ -12,7 +12,8 @@
 
   function measureView({ pageKind, conversationId, state, display, title, lastMeasuredDisplay,
     exportBusy, recoveryFailureStreak, baselineFailureThreshold, unverifiedResponseStreak,
-    automaticRecoveryThreshold, updateOnUserInput, expandBusy = false }) {
+    automaticRecoveryThreshold, updateOnUserInput, expandBusy = false,
+    exportError = "", expandError = "", documentAction = "" }) {
     const loading = state === "loading";
     const busy = exportBusy || expandBusy || loading;
     const indicator = recoveryFailureStreak >= baselineFailureThreshold ? "unavailable" : busy ? "busy"
@@ -22,7 +23,7 @@
       ? lastMeasuredDisplay : { primary: t("usage_unverified"), secondary: "" };
     const shown = exportBusy ? exportDisplay : display;
     const hideUsage = loading && !exportBusy;
-    const primary = hideUsage ? t("measuring") : shown.primary;
+    let primary = hideUsage ? t("measuring") : shown.primary;
     const secondary = hideUsage ? "" : shown.secondary;
     if (indicator === "unavailable") {
       title = t("unavailable_title", title);
@@ -35,29 +36,249 @@
         : t("next_verification_hint");
       title = `${title} · ${recoveryHint} ${t("manual_recovery_hint")}`;
     }
-    return { primary, secondary, title, indicator, numeric: !hideUsage && shown.charactersText !== undefined, charactersText: shown.charactersText,
+    // Only the latest accepted document action owns a failure notice. Retained
+    // measurement data remains separate and is selected again after the notice.
+    const actionError = documentAction === "expand" ? expandError : documentAction === "export" ? exportError : "";
+    const notice = exportBusy || expandBusy || Boolean(actionError);
+    let noticeTitle = "";
+    if (exportBusy) { primary = t("export_preparing"); noticeTitle = t("export_hint"); }
+    else if (expandBusy) { primary = t("expand_preparing"); noticeTitle = t("expand_preparing_hint"); }
+    else if (actionError) {
+      primary = documentAction === "expand" ? t("expand_failed_status") : t("export_failed_status");
+      noticeTitle = documentAction === "expand" ? t("expand_failed_hint", actionError) : t("export_failed_hint", actionError);
+    }
+    if (noticeTitle) title = [noticeTitle, title].filter(Boolean).join(" · ");
+    return { primary, secondary, title, indicator, usagePrimary: shown.primary,
+      numeric: !notice && !hideUsage && shown.charactersText !== undefined, charactersText: shown.charactersText,
       mode: pageKind === "conversation" ? "active" : "idle" };
   }
 
   // onExpand is optional until the caller connects the document-opening action.
-  function create({ document, window, getComposer, onMeasure, onExport, onExpand, onOptions }) {
+  function create({ document, window, getComposer, onMeasure, onExport, onExpand, onOptions, layout = null, editing = false }) {
     let uiPosition = null;
-    function createUi() {
+    let refs = null, currentHost = null, currentMode = null;
+    let entryValue, entryLabel = "";
+    let textObserver, textFrame, textAnimation, textAnimationKey = "";
+    const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+    function resetTextScroll() {
+      textObserver?.disconnect();
+      if (textFrame !== undefined) window.cancelAnimationFrame?.(textFrame);
+      textFrame = undefined;
+      textAnimation?.cancel(); textAnimation = null; textAnimationKey = "";
+    }
+    function scheduleTextScroll() {
+      if (typeof window.requestAnimationFrame !== "function" || textFrame !== undefined) return;
+      textFrame = window.requestAnimationFrame(() => {
+        textFrame = undefined;
+        const button = refs?.measure, label = refs?.primary;
+        if (!layout || currentMode !== "conversation" || !button || !label || button.dataset.scrollText !== "true") return;
+        // Measure CSS pixels, including the unit's actual font, independently of editor zoom.
+        const width = button.clientWidth, distance = Math.max(0, label.scrollWidth - width);
+        const overflow = width > 0 && distance > 1;
+        button.dataset.marquee = String(overflow);
+        const key = [label.textContent, width, distance, window.getComputedStyle(label).font, reducedMotion?.matches].join("|");
+        if (key === textAnimationKey) return;
+        textAnimationKey = key; textAnimation?.cancel(); textAnimation = null;
+        if (!overflow || reducedMotion?.matches || typeof label.animate !== "function") return;
+        const pause = 1400, travel = Math.max(1200, distance / 20 * 1000), duration = travel + pause * 2;
+        const end = `translateX(-${distance}px)`;
+        textAnimation = label.animate([
+          { transform: "translateX(0)", offset: 0 },
+          { transform: "translateX(0)", offset: pause / duration },
+          { transform: end, offset: (pause + travel) / duration },
+          { transform: end, offset: 1 },
+        ], { duration, iterations: Infinity, easing: "linear" });
+      });
+    }
+    document.fonts?.addEventListener?.("loadingdone", scheduleTextScroll);
+    reducedMotion?.addEventListener?.("change", scheduleTextScroll);
+    function element(tag, attributes = {}, text, svg = false) {
+      const node = svg ? document.createElementNS("http://www.w3.org/2000/svg", tag)
+        : document.createElement(tag);
+      for (const [name, value] of Object.entries(attributes)) node.setAttribute(name, value);
+      if (text !== undefined) node.textContent = text;
+      return node;
+    }
+    function connect(host, mode) {
+      resetTextScroll();
+      const shadow = host.shadowRoot;
+      refs = Object.fromEntries(["measure", "primary", "secondary", "symbol", "expand", "export", "expand-icon", "export-icon", "entry-time", "controls"]
+        .map(role => [role, shadow.querySelector(`.${role}`)]));
+      refs.description = shadow.querySelector("#expand-description");
+      refs.canvas = shadow.querySelector(".guide-canvas");
+      const measure = refs.measure;
+      measure?.addEventListener("click", () => measure.dataset.action === "options" ? onOptions?.() : onMeasure());
+      if (mode === "idle" && !measure) refs.symbol?.addEventListener("click", () => onOptions?.());
+      refs.export?.addEventListener("click", onExport);
+      if (typeof onExpand === "function") refs.expand?.addEventListener("click", onExpand);
+      if (!refs.export) refs["export-icon"]?.addEventListener("click", onExport);
+      if (!refs.expand && typeof onExpand === "function") refs["expand-icon"]?.addEventListener("click", onExpand);
+      if (!document.getElementById(HOST_ID)) document.documentElement.append(host);
+      uiPosition?.destroy();
+      uiPosition = namespace.uiPosition.create({ host, getComposer, document, window,
+        bottomOffset: layout?.[mode]?.bottomOffset ?? 0,
+        verticalAlign: layout?.[mode]?.verticalAlign ?? "bottom",
+        anchorHeight: layout?.[mode]?.height });
+      currentHost = host;
+      currentMode = mode;
+      if (layout && mode === "conversation" && refs.primary && typeof window.ResizeObserver === "function") {
+        textObserver = new window.ResizeObserver(scheduleTextScroll);
+        textObserver.observe(refs.measure); textObserver.observe(refs.primary);
+      }
+      return host;
+    }
+    function createGuideUi(mode) {
       let host = document.getElementById(HOST_ID);
-      if (host) return host;
+      if (host && host === currentHost && mode === currentMode) return host;
+      if (!host) {
+        host = element("div", { id: HOST_ID, "data-chatcouter-owned": "true" });
+        host.attachShadow({ mode: "open" });
+      }
+      const spec = namespace.themeLayout.validate(layout[mode], { allowOverlap: editing });
+      const sample = Boolean(layout.atlasUrl);
+      const canvas = element("div", { class: "guide-canvas",
+        style: `width:${spec.width}px;height:${Math.max(spec.height, spec.background?.height ?? 0)}px` });
+      const controls = element("div", { class: "controls", "data-layout": "guide",
+        style: `width:${spec.width}px;height:${spec.height}px` });
+      const style = element("style", {}, `
+        :host { pointer-events: none; font: 12px/1.4 system-ui, sans-serif; }
+        .guide-canvas { position: relative; background: rgb(0,255,0); pointer-events: none; }
+        .guide-canvas[data-capacity-stage="1"] { background: #ffff00; }
+        .guide-canvas[data-capacity-stage="2"] { background: #87ceeb; }
+        .controls { position: absolute; left: 0; bottom: 0; color: #111; pointer-events: none;
+          --status: #666; }
+        .controls::after { content: ""; position: absolute; inset: 0; z-index: 1;
+          outline: 2px solid red; outline-offset: -2px; pointer-events: none; }
+        .controls[data-indicator="ready"], .controls[data-indicator="busy"] { --status: #397bd1; }
+        .controls[data-indicator="attention"] { --status: #c38816; }
+        .controls[data-indicator="unavailable"] { --status: #777; }
+        .component { position: absolute; box-sizing: border-box; outline: 1px solid red;
+          outline-offset: -1px; pointer-events: none; }
+        .component[data-display="true"] { outline-color: blue; }
+        .content { position: absolute; inset: 2px; overflow: hidden; white-space: nowrap;
+          font: inherit; color: inherit; margin: 0; padding: 0; box-sizing: border-box;
+          border: 0; border-radius: 0; background: transparent; text-align: left;
+          display: flex; align-items: center; min-width: 0; }
+        button.content { appearance: none; cursor: pointer; pointer-events: auto;
+          outline: 1px dashed #008080; outline-offset: -1px; }
+        button:disabled { cursor: not-allowed; opacity: .65; }
+        button:focus-visible { outline: 2px solid #111; outline-offset: -2px; }
+        .symbol { color: var(--status); font-size: 28px; justify-content: center; }
+        .primary { overflow: hidden; text-overflow: clip; }
+          .measure[data-scroll-text="true"] .primary { flex: 0 0 auto; width: max-content; overflow: visible; }
+          .measure[data-marquee="true"] { justify-content: flex-start !important; }
+        .unit { margin-left: 3px; }
+        .action-description, [hidden] { display: none !important; }
+      `);
+      if (sample) {
+        controls.dataset.layout = "sample";
+        style.textContent += `
+          .guide-canvas { background: transparent !important; }
+          .guide-canvas, .controls { --ink: light-dark(#34383d, #e5e7eb); --muted: light-dark(#6c727a, #aeb5be);
+            --line: light-dark(#80878f, #929ba7); --status: light-dark(#666d76, #adb6c1); }
+          .controls[data-indicator="ready"], .controls[data-indicator="busy"] { --status: light-dark(#4d73a5, #8cafd9); }
+          .controls[data-indicator="attention"] { --status: light-dark(#a77b32, #cfaa67); }
+          .controls[data-indicator="unavailable"] { --status: light-dark(#737983, #808893); }
+          .controls[data-mode="idle"] { --line: light-dark(#666d76, #adb6c1); --status: var(--line); }
+          .controls::after { display: none; }
+          .component, button.content { outline: none; }
+          .content { justify-content: flex-start; }
+          .sprite { position: absolute; inset: 0; margin: auto; pointer-events: none; }
+          .theme-background { position: absolute; left: 0; bottom: 0; pointer-events: none; }
+          .content { line-height: 16px; }
+          .measure { font-variant-numeric: tabular-nums; }
+          .controls[data-mode="idle"] .primary { line-height: 20px; letter-spacing: -.4px; }
+          .controls[data-mode="active"][data-indicator="busy"] .symbol .sprite[data-color="status"] {
+            animation: theme-pulse 1200ms ease-in-out infinite alternate; }
+          @keyframes theme-pulse { to { opacity: .25; } }
+          @media (prefers-reduced-motion: reduce) { .symbol .sprite { animation: none !important; } }
+          .measure[data-numeric="true"] .primary { font-size: var(--numeric-size); font-weight: var(--numeric-weight); }
+          .unit { color: var(--muted); font-size: var(--unit-size, 12px); font-weight: var(--unit-weight, 400); }
+          .brand-muted { color: var(--muted); }
+          button:hover:enabled { color: var(--status); background-color: color-mix(in srgb, var(--status) 7%, transparent); }
+          button:focus-visible { outline: 2px solid var(--status); outline-offset: -2px; }
+        `;
+        if (spec.background) {
+        const background = element("div", { class: "theme-background", "aria-hidden": "true" });
+        canvas.append(background);
+        paint(background, spec.background.sources[0], spec.background.width, spec.background.height, spec.background.color);
+        }
+      }
+      function paint(node, crop, width, height, color) {
+        const sx = width / crop.width, sy = height / crop.height;
+        const image = `url("${layout.atlasUrl}") ${-crop.x * sx}px ${-crop.y * sy}px / ${layout.atlas.width * sx}px ${layout.atlas.height * sy}px no-repeat`;
+        node.setAttribute("style", `width:${width}px;height:${height}px;${color
+          ? `background:${color.startsWith("#") ? color : `var(--${color})`};mask:${image};mask-mode:alpha`
+          : `background:${image}`}`);
+      }
+      function component(role, className, tag, text) {
+        const box = spec.components[role];
+        if (!box || box.enabled === false) return null;
+        const outer = element("div", { class: `component ${role}-box`,
+          "data-display": String(tag !== "button"),
+          style: `left:${box.x}px;bottom:${box.y}px;width:${box.width}px;height:${box.height}px` });
+        const content = element(tag, { class: `content ${className}`,
+          ...(tag === "button" ? { type: "button" } : {}) }, sample && box.paint ? undefined : text);
+        if (sample && box.text) {
+          const family = ["system-ui", "serif", "sans-serif", "monospace"].includes(box.text.family)
+            ? box.text.family : `"${box.text.family}"`;
+          const unitStyle = role === "measure" && box.text.numericSize === undefined && box.text.numericWeight === undefined
+            ? `--unit-size:${box.text.size}px;--unit-weight:${box.text.weight};` : "";
+          content.setAttribute("style",
+            `${unitStyle}font-family:${family},sans-serif;font-size:${box.text.size}px;font-weight:${box.text.weight};color:${box.text.color.startsWith("#") ? box.text.color : `var(--${box.text.color})`};--numeric-size:${box.text.numericSize ?? box.text.size}px;--numeric-weight:${box.text.numericWeight ?? box.text.weight};justify-content:${({ left: "flex-start", center: "center", right: "flex-end" })[box.text.align ?? "left"]}`);
+        }
+        if (sample && box.paint && box.fill !== undefined) {
+          const sprite = element("span", { class: "sprite", "aria-hidden": "true",
+            style: `width:${box.width - 4}px;height:${box.height - 4}px;background:${box.fill.startsWith("#") ? box.fill : `var(--${box.fill})`}` });
+          content.append(sprite);
+        } else if (sample && box.paint) for (const layer of box.paint) {
+          const sprite = element("span", { class: "sprite", "aria-hidden": "true",
+            ...(layer.color !== undefined ? { "data-color": layer.color } : {}) });
+          const scale = Math.min((box.width - 4) / layer.source.width, (box.height - 4) / layer.source.height);
+          paint(sprite, layer.source, box.fit === "stretch" ? box.width - 4 : layer.source.width * scale,
+            box.fit === "stretch" ? box.height - 4 : layer.source.height * scale, layer.color);
+          content.append(sprite);
+        }
+        outer.append(content);
+        controls.append(outer);
+        return content;
+      }
+      const measure = component("measure", "measure", "button");
+      if (measure) {
+        measure.setAttribute("aria-live", "polite");
+        if (sample && mode === "conversation") measure.dataset.scrollText = "true";
+        measure.append(element("span", { class: "primary" }));
+      }
+      component("secondary", "secondary", "span");
+      const isActive = box => Boolean(box && box.enabled !== false);
+      const symbolButton = mode === "idle" && !isActive(spec.components.measure);
+      const symbol = component("symbol", "symbol", symbolButton ? "button" : "span", "▲");
+      if (!symbolButton) symbol?.setAttribute("aria-hidden", "true");
+      component("expand", "action expand", "button", t("expand_button"));
+      component("export", "action export", "button", t("export_button"));
+      const expandIcon = component("expandIcon", "expand-icon", isActive(spec.components.expand) ? "span" : "button", "▤");
+      const exportIcon = component("exportIcon", "export-icon", isActive(spec.components.export) ? "span" : "button", "↓");
+      if (isActive(spec.components.expand)) expandIcon?.setAttribute("aria-hidden", "true");
+      if (isActive(spec.components.export)) exportIcon?.setAttribute("aria-hidden", "true");
+      component("entryTime", "entry-time", "span");
+      controls.append(element("span", { id: "expand-description", class: "action-description" }));
+      for (const target of [controls.querySelector(".expand"), !spec.components.expand && expandIcon]) {
+        if (target) target.setAttribute("aria-describedby", "expand-description");
+      }
+      canvas.append(controls);
+      host.shadowRoot.replaceChildren(style, canvas);
+      return connect(host, mode);
+    }
+    function createUi(view) {
+      if (layout) return createGuideUi(view.pageKind === "conversation" ? "conversation" : "idle");
+      let host = document.getElementById(HOST_ID);
+      if (host && host === currentHost) return host;
 
       host = document.createElement("div");
       host.id = HOST_ID;
       host.setAttribute("data-chatcouter-owned", "true");
 
       const shadow = host.attachShadow({ mode: "open" });
-      function element(tag, attributes = {}, text, svg = false) {
-        const node = svg ? document.createElementNS("http://www.w3.org/2000/svg", tag)
-          : document.createElement(tag);
-        for (const [name, value] of Object.entries(attributes)) node.setAttribute(name, value);
-        if (text !== undefined) node.textContent = text;
-        return node;
-      }
       const style = element("style", {}, `
         :host { color-scheme: inherit; font-family: system-ui, sans-serif; }
         .controls {
@@ -158,74 +379,109 @@
         expand, element("span", { class: "action-description", id: "expand-description" }), exportControl);
       shadow.append(style, controls);
 
-      const measureButton = shadow.querySelector(".measure");
-      measureButton.addEventListener("click", () => {
-        return measureButton.dataset.action === "options" ? onOptions() : onMeasure();
-      });
-      shadow.querySelector(".export").addEventListener("click", onExport);
-      if (typeof onExpand === "function") shadow.querySelector(".expand").addEventListener("click", onExpand);
-      document.documentElement.append(host);
-      uiPosition?.destroy();
-      uiPosition = namespace.uiPosition.create({
-        host,
-        getComposer,
-        document,
-        window,
-      });
-      return host;
+      return connect(host, "legacy");
     }
 
     function render(view) {
-      const shadow = createUi().shadowRoot;
-      const exportButton = shadow.querySelector(".export");
-      exportButton.hidden = view.pageKind !== "conversation";
-      exportButton.disabled = view.exportBusy || Boolean(view.expandBusy);
-      exportButton.textContent = view.exportBusy ? t("export_preparing") : view.exportError ? t("export_retry") : t("export_button");
-      exportButton.title = view.exportError
-        ? t("export_failed_hint", view.exportError)
-        : t("export_hint");
-      const expandButton = shadow.querySelector(".expand");
-      expandButton.hidden = view.pageKind !== "conversation";
-      expandButton.disabled = typeof onExpand !== "function" || view.baselineBusy || view.exportBusy || Boolean(view.expandBusy);
-      expandButton.textContent = view.expandBusy ? t("expand_preparing") : view.expandError ? t("expand_retry") : t("expand_button");
-      expandButton.title = typeof onExpand !== "function" ? t("expand_unconnected_hint")
-        : view.expandBusy ? t("expand_preparing_hint") : view.expandError ? t("expand_failed_hint", view.expandError) : t("expand_hint");
-      shadow.querySelector("#expand-description").textContent = expandButton.title;
-      const shown = measureView(view);
-      const button = shadow.querySelector(".measure");
-      button.dataset.action = ["home", "new-chat"].includes(view.pageKind)
-        && shown.primary === "ChatGauge" && typeof onOptions === "function" ? "options" : "measure";
-      button.disabled = view.baselineBusy || view.exportBusy || Boolean(view.expandBusy);
-      button.dataset.state = view.state;
-      button.dataset.indicator = shown.indicator;
-      button.dataset.numeric = String(shown.numeric);
-      const primaryLabel = button.querySelector(".primary");
-      const charactersText = shown.numeric ? compactCharacters(shown.charactersText) : shown.primary;
-      primaryLabel.textContent = charactersText;
-      if (shown.numeric) {
-        const unit = document.createElement("span");
-        unit.className = "unit";
-        unit.textContent = t("character_unit");
-        primaryLabel.append(unit);
-      } else if (shown.mode === "idle" && shown.primary === "ChatGauge") {
-        primaryLabel.textContent = "Chat";
-        const namePart = document.createElement("span");
-        namePart.className = "brand-muted";
-        namePart.textContent = "Gauge";
-        primaryLabel.append(namePart);
+      createUi(view);
+      if (refs.canvas) {
+        // Use published bytes, never rounded
+        // text or document-export results; loading/errors retain this snapshot.
+        const sample = view.pageKind === "conversation" && view.conversationId
+          && view.lastMeasuredDisplay?.conversationId === view.conversationId ? view.lastMeasuredDisplay : null;
+        const bytes = sample?.utf8Bytes;
+        const settings = view.capacityBackground;
+        const stage = settings?.enabled !== false && Number.isSafeInteger(bytes) && bytes >= 0
+          ? bytes > (settings?.thirdKB ?? 400) * 1024 ? "2" : bytes > (settings?.secondKB ?? 200) * 1024 ? "1" : "0" : "0";
+        if (refs.canvas.dataset.capacityStage !== stage) {
+          refs.canvas.dataset.capacityStage = stage;
+        }
+        const backgroundStage = !editing && view.backgroundStageOverride === 1 && stage === "2" ? "1" : stage;
+        if (refs.canvas.dataset.backgroundStage !== backgroundStage) {
+          refs.canvas.dataset.backgroundStage = backgroundStage;
+          const background = currentHost.shadowRoot.querySelector(".theme-background");
+          if (background) {
+            const crop = layout[currentMode].background.sources[Number(backgroundStage)] || layout[currentMode].background.sources[0];
+            const property = layout[currentMode].background.color ? "maskPosition" : "backgroundPosition";
+            background.style[property] = `${-crop.x}px ${-crop.y}px`;
+          }
+        }
       }
-      button.querySelector(".secondary").textContent = shown.secondary;
-      button.title = shown.numeric && charactersText !== shown.charactersText
-        ? [shown.primary, shown.title].filter(Boolean).join(" · ") : shown.title;
-      button.setAttribute("aria-label", [shown.primary, shown.secondary, shown.title].filter(Boolean).join(" · "));
-      const controls = shadow.querySelector(".controls");
+      const exportTitle = view.exportError ? t("export_failed_hint", view.exportError) : t("export_hint");
+      const expandTitle = typeof onExpand !== "function" ? t("expand_unconnected_hint")
+        : view.expandBusy ? t("expand_preparing_hint") : view.expandError ? t("expand_failed_hint", view.expandError) : t("expand_hint");
+      for (const [action, title, disabled] of [
+        ["export", exportTitle, view.exportBusy || Boolean(view.expandBusy)],
+        ["expand", expandTitle, typeof onExpand !== "function" || view.baselineBusy || view.exportBusy || Boolean(view.expandBusy)],
+      ]) {
+        for (const node of [refs[action], refs[`${action}-icon`]]) {
+          if (!node) continue;
+          node.hidden = view.pageKind !== "conversation";
+          node.title = title;
+          if (node.tagName.toLowerCase() === "button") {
+            node.disabled = disabled;
+            node.setAttribute("aria-label", t(action === "export" ? "export_button" : "expand_button"));
+          }
+        }
+        if (refs[action]) refs[action].textContent = t(action === "export" ? "export_button" : "expand_button");
+      }
+      if (refs.description) refs.description.textContent = expandTitle;
+      const shown = measureView(view);
+      if (currentMode === "idle" && !refs.measure && refs.symbol) {
+        refs.symbol.disabled = typeof onOptions !== "function" || view.baselineBusy || view.exportBusy || Boolean(view.expandBusy);
+        refs.symbol.title = shown.title;
+        refs.symbol.setAttribute("aria-label", t("options_open_hint"));
+      }
+      const button = refs.measure;
+      if (button) {
+        button.dataset.action = ["home", "new-chat"].includes(view.pageKind)
+          && shown.primary === "ChatGauge" && typeof onOptions === "function" ? "options" : "measure";
+        button.disabled = view.baselineBusy || view.exportBusy || Boolean(view.expandBusy);
+        button.dataset.state = view.state;
+        button.dataset.indicator = shown.indicator;
+        button.dataset.numeric = String(shown.numeric);
+        const primaryLabel = refs.primary;
+        const charactersText = shown.numeric ? compactCharacters(shown.charactersText) : shown.primary;
+        primaryLabel.textContent = charactersText;
+        if (shown.numeric) {
+          const unit = document.createElement("span");
+          unit.className = "unit";
+          unit.textContent = t("character_unit");
+          primaryLabel.append(unit);
+        } else if (shown.mode === "idle" && shown.primary === "ChatGauge") {
+          primaryLabel.textContent = "Chat";
+          const namePart = document.createElement("span");
+          namePart.className = "brand-muted";
+          namePart.textContent = "Gauge";
+          primaryLabel.append(namePart);
+        }
+        button.title = shown.numeric && charactersText !== shown.charactersText
+          ? [shown.primary, shown.title].filter(Boolean).join(" · ") : shown.title;
+        button.setAttribute("aria-label", [...new Set([shown.primary, shown.usagePrimary, shown.secondary, shown.title].filter(Boolean))].join(" · "));
+      }
+      if (refs.secondary) refs.secondary.textContent = shown.secondary;
+      if (refs["entry-time"]) {
+        if (entryValue !== view.enteredAt) {
+          entryValue = view.enteredAt;
+          entryLabel = Number.isFinite(entryValue) ? new Date(entryValue).toLocaleTimeString(namespace.i18n.locale(),
+            { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }) : "";
+        }
+        refs["entry-time"].textContent = entryLabel;
+        refs["entry-time"].hidden = view.showEntryTime === false;
+      }
+      const controls = refs.controls;
       controls.dataset.mode = shown.mode;
       controls.dataset.indicator = shown.indicator;
-      controls.title = button.title;
+      controls.title = button?.title || shown.title;
       uiPosition?.schedule();
+      scheduleTextScroll();
     }
 
-    return Object.freeze({ render, schedule: () => uiPosition?.schedule() });
+    function setLayout(next) {
+      layout = next;
+      currentMode = null;
+    }
+    return Object.freeze({ render, setLayout, schedule: () => uiPosition?.schedule() });
   }
 
   namespace.meterUi = Object.freeze({ create });

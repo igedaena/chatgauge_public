@@ -1,0 +1,527 @@
+{
+  "editor_title": {
+    "message": "Theme editor",
+    "description": "Theme editor editor_title"
+  },
+  "editor_open": {
+    "message": "Import theme"
+  },
+  "editor_reset": {
+    "message": "Reset to default",
+    "description": "Theme editor editor_reset"
+  },
+  "editor_export": {
+    "message": "Save theme"
+  },
+  "editor_screen": {
+    "message": "Screen",
+    "description": "Theme editor editor_screen"
+  },
+  "editor_conversation": {
+    "message": "Conversation",
+    "description": "Theme editor editor_conversation"
+  },
+  "editor_home": {
+    "message": "Home",
+    "description": "Theme editor editor_home"
+  },
+  "editor_environment": {
+    "message": "Preview background",
+    "description": "Theme editor editor_environment"
+  },
+  "editor_light": {
+    "message": "Light",
+    "description": "Theme editor editor_light"
+  },
+  "editor_dark": {
+    "message": "Dark",
+    "description": "Theme editor editor_dark"
+  },
+  "editor_zoom": {
+    "message": "Zoom",
+    "description": "Theme editor editor_zoom"
+  },
+  "editor_state": {
+    "message": "Indicator state",
+    "description": "Theme editor editor_state"
+  },
+  "editor_ready": {
+    "message": "Ready",
+    "description": "Theme editor editor_ready"
+  },
+  "editor_busy": {
+    "message": "Busy · blinking",
+    "description": "Theme editor editor_busy"
+  },
+  "editor_attention": {
+    "message": "Unverified",
+    "description": "Theme editor editor_attention"
+  },
+  "editor_unavailable": {
+    "message": "Unavailable",
+    "description": "Theme editor editor_unavailable"
+  },
+  "editor_stage": {
+    "message": "Background stage",
+    "description": "Theme editor editor_stage"
+  },
+  "editor_coordinate_hint": {
+    "message": "X/Y: bottom-left · move and resize in whole pixels",
+    "description": "Theme editor editor_coordinate_hint"
+  },
+  "editor_loading": {
+    "message": "Loading default theme…",
+    "description": "Theme editor editor_loading"
+  },
+  "editor_components": {
+    "message": "Elements",
+    "description": "Theme editor editor_components"
+  },
+  "editor_measure": {
+    "message": "Characters / status message",
+    "description": "Theme editor editor_measure"
+  },
+  "editor_secondary": {
+    "message": "File size",
+    "description": "Theme editor editor_secondary"
+  },
+  "editor_symbol": {
+    "message": "Indicator",
+    "description": "Theme editor editor_symbol"
+  },
+  "editor_expand": {
+    "message": "View label",
+    "description": "Theme editor editor_expand"
+  },
+  "editor_expandIcon": {
+    "message": "View icon",
+    "description": "Theme editor editor_expandIcon"
+  },
+  "editor_exportIcon": {
+    "message": "Export icon",
+    "description": "Theme editor editor_exportIcon"
+  },
+  "editor_entryTime": {
+    "message": "Entry time",
+    "description": "Theme editor editor_entryTime"
+  },
+  "editor_name": {
+    "message": "Name",
+    "description": "Theme editor editor_name"
+  },
+  "editor_background": {
+    "message": "Background",
+    "description": "Theme editor editor_background"
+  },
+  "editor_x": {
+    "message": "X",
+    "description": "Theme editor editor_x"
+  },
+  "editor_y": {
+    "message": "Y",
+    "description": "Theme editor editor_y"
+  },
+  "editor_width": {
+    "message": "Width",
+    "description": "Theme editor editor_width"
+  },
+  "editor_height": {
+    "message": "Height",
+    "description": "Theme editor editor_height"
+  },
+  "editor_family": {
+    "message": "Font family",
+    "description": "Theme editor editor_family"
+  },
+  "editor_size": {
+    "message": "Font size",
+    "description": "Theme editor editor_size"
+  },
+  "editor_weight": {
+    "message": "Weight",
+    "description": "Theme editor editor_weight"
+  },
+  "editor_align": {
+    "message": "Alignment",
+    "description": "Theme editor editor_align"
+  },
+  "editor_left": {
+    "message": "Left",
+    "description": "Theme editor editor_left"
+  },
+  "editor_center": {
+    "message": "Center",
+    "description": "Theme editor editor_center"
+  },
+  "editor_right": {
+    "message": "Right",
+    "description": "Theme editor editor_right"
+  },
+  "editor_color": {
+    "message": "Color",
+    "description": "Theme editor editor_color"
+  },
+  "editor_stages_enabled": {
+    "message": "Use background stages",
+    "description": "Theme editor editor_stages_enabled"
+  },
+  "editor_load_stage1": {
+    "message": "Stage 1 · load base PNG",
+    "description": "Theme editor editor_load_stage1"
+  },
+  "editor_load_stage2": {
+    "message": "Stage 2 · load PNG",
+    "description": "Theme editor editor_load_stage2"
+  },
+  "editor_load_stage3": {
+    "message": "Stage 3 · load PNG",
+    "description": "Theme editor editor_load_stage3"
+  },
+  "editor_load_image": {
+    "message": "Load image · PNG",
+    "description": "Theme editor editor_load_image"
+  },
+  "editor_load_body": {
+    "message": "Load body image · PNG",
+    "description": "Theme editor editor_load_body"
+  },
+  "editor_load_status": {
+    "message": "Load indicator PNG",
+    "description": "Theme editor editor_load_status"
+  },
+  "editor_color_hint": {
+    "message": "ink · muted · line or #RRGGBB / #RRGGBBAA",
+    "description": "Theme editor editor_color_hint"
+  },
+  "editor_paint_color_hint": {
+    "message": "original: image colors · ink / muted / line: adaptive · #RRGGBB: fixed",
+    "description": "Theme editor editor_paint_color_hint"
+  },
+  "editor_font_hint": {
+    "message": "Enter an installed font family. Missing fonts use a fallback. Overflowing characters and status messages scroll horizontally.",
+    "description": "Theme editor editor_font_hint"
+  },
+  "editor_indicator_hint": {
+    "message": "Choose a circle, square, triangle, or custom PNG. Status colors and blinking apply automatically.",
+    "description": "Theme editor editor_indicator_hint"
+  },
+  "editor_image_hint": {
+    "message": "Static PNG · up to 2 MiB and 2048px per side. Switching between the original image and solid fill preserves the original.",
+    "description": "Theme editor editor_image_hint"
+  },
+  "editor_background_hint": {
+    "message": "Image X/Y starts at the top-left of the output frame. Content outside is cropped; uncovered areas stay transparent. Source images and transform history are not included in the ZIP."
+  },
+  "editor_off_hint": {
+    "message": "This element is off. Turn it on to edit its preserved settings."
+  },
+  "editor_layout_error": {
+    "message": "Elements must be at least 8×8px and fit inside the placement area. Overlapping elements cannot be exported.",
+    "description": "Theme editor editor_layout_error"
+  },
+  "editor_font_error": {
+    "message": "Check font name, size and color. Sizes must be whole pixels from 8 to 32.",
+    "description": "Theme editor editor_font_error"
+  },
+  "editor_integer": {
+    "message": "Enter a whole number.",
+    "description": "Theme editor editor_integer"
+  },
+  "editor_required": {
+    "message": "Conversation usage is required.",
+    "description": "Theme editor editor_required"
+  },
+  "editor_atlas_error": {
+    "message": "Images do not fit in one PNG atlas. Reduce the input image dimensions.",
+    "description": "Theme editor editor_atlas_error"
+  },
+  "editor_pair_error": {
+    "message": "PNG and JSON do not match. Select the correct pair.",
+    "description": "Theme editor editor_pair_error"
+  },
+  "editor_pair_hint": {
+    "message": "Select a theme ZIP, or the matching PNG and JSON files."
+  },
+  "editor_png_hint": {
+    "message": "Use a static PNG up to 2 MiB and 2048px per side.",
+    "description": "Theme editor editor_png_hint"
+  },
+  "editor_json_hint": {
+    "message": "JSON files must be at most 64 KiB.",
+    "description": "Theme editor editor_json_hint"
+  },
+  "editor_file_error": {
+    "message": "Could not process the theme or image. Existing edits are kept.",
+    "description": "Theme editor editor_file_error"
+  },
+  "editor_changed": {
+    "message": "Changes applied. Export to save the files.",
+    "description": "Theme editor editor_changed"
+  },
+  "editor_reset_done": {
+    "message": "Editor reset to the default theme.",
+    "description": "Theme editor editor_reset_done"
+  },
+  "editor_open_done": {
+    "message": "Theme opened. Off components absent from the files start from defaults.",
+    "description": "Theme editor editor_open_done"
+  },
+  "editor_export_done": {
+    "message": "Download started. The browser controls the save location."
+  },
+  "editor_initial_hint": {
+    "message": "Select an element in the preview or list. Select characters / status messages directly in the preview."
+  },
+  "editor_export_label": {
+    "message": "Export label",
+    "description": "Theme editor component label"
+  },
+  "editor_pick_color": {
+    "message": "Choose color",
+    "description": "Theme editor color picker"
+  },
+  "editor_message_preview": {
+    "message": "Status message preview",
+    "description": "Theme editor editor_message_preview"
+  },
+  "editor_composer_preview": {
+    "message": "Chat input and help",
+    "description": "Theme editor editor_composer_preview"
+  },
+  "editor_grid": {
+    "message": "Show grid"
+  },
+  "editor_grid_gap": {
+    "message": "Grid spacing (px)",
+    "description": "Theme editor editor_grid_gap"
+  },
+  "editor_reset_view": {
+    "message": "Reset view",
+    "description": "Theme editor editor_reset_view"
+  },
+  "editor_navigation_hint": {
+    "message": "Ctrl + wheel: zoom at cursor · Space + drag: pan · Click empty space: deselect",
+    "description": "Theme editor editor_navigation_hint"
+  },
+  "editor_composer_text": {
+    "message": "Message",
+    "description": "Theme editor editor_composer_text"
+  },
+  "editor_component_area": {
+    "message": "Placement area",
+    "description": "Theme editor editor_component_area"
+  },
+  "editor_maximum": {
+    "message": "Background maximum",
+    "description": "Theme editor editor_maximum"
+  },
+  "editor_select_hint": {
+    "message": "Select an element in the preview or the list below.",
+    "description": "Theme editor editor_select_hint"
+  },
+  "editor_ink_color": {
+    "message": "Primary text color",
+    "description": "Theme editor editor_ink_color"
+  },
+  "editor_muted_color": {
+    "message": "Secondary text color",
+    "description": "Theme editor editor_muted_color"
+  },
+  "editor_line_color": {
+    "message": "Line color",
+    "description": "Theme editor editor_line_color"
+  },
+  "editor_original_color": {
+    "message": "Original image colors",
+    "description": "Theme editor editor_original_color"
+  },
+  "editor_custom_color": {
+    "message": "Custom color",
+    "description": "Theme editor editor_custom_color"
+  },
+  "editor_color_code": {
+    "message": "Color code",
+    "description": "Theme editor editor_color_code"
+  },
+  "editor_adaptive_color_hint": {
+    "message": "Primary, secondary and line colors adapt to light/dark mode. Custom colors stay fixed.",
+    "description": "Theme editor editor_adaptive_color_hint"
+  },
+  "editor_windows_fonts": {
+    "message": "View Windows installed fonts",
+    "description": "Theme editor editor_windows_fonts"
+  },
+  "editor_windows_fonts_hint": {
+    "message": "Open Windows font settings. If blocked, press Win+R and enter ms-settings:fonts.",
+    "description": "Theme editor editor_windows_fonts_hint"
+  },
+  "editor_grid_error": {
+    "message": "Grid spacing must be a whole number from 1 to 128px.",
+    "description": "Theme editor editor_grid_error"
+  },
+  "editor_icon": {
+    "message": "Icon"
+  },
+  "editor_guidelines": {
+    "message": "Guidelines"
+  },
+  "editor_area_guide": {
+    "message": "Show placement areas"
+  },
+  "editor_background_legend": {
+    "message": "Maximum background 256 × 640 px"
+  },
+  "editor_discard": {
+    "message": "Discard unsaved changes and continue?"
+  },
+  "editor_zip_error": {
+    "message": "Use a ZIP exported by the theme editor. The current work is kept."
+  },
+  "editor_overlap_warning": {
+    "message": "Elements overlap. Move or resize them before exporting."
+  },
+  "editor_actual_preview": {
+    "message": "Preview appearance"
+  },
+  "editor_return_edit": {
+    "message": "Return to editing"
+  },
+  "editor_text": {
+    "message": "Text"
+  },
+  "editor_restore_family": {
+    "message": "Restore default font family"
+  },
+  "editor_semantic_color_hint": {
+    "message": "The existing adaptive color is preserved until you change the color value."
+  },
+  "editor_frame_hint": {
+    "message": "Fixed 256 × 640px output frame. Image positions start at its top-left; anything outside is cropped."
+  },
+  "editor_source_image": {
+    "message": "Original image"
+  },
+  "editor_solid_fill": {
+    "message": "Solid fill"
+  },
+  "editor_keep_ratio": {
+    "message": "Keep aspect ratio"
+  },
+  "editor_shape": {
+    "message": "Shape"
+  },
+  "editor_custom": {
+    "message": "Custom"
+  },
+  "editor_circle": {
+    "message": "Circle"
+  },
+  "editor_square": {
+    "message": "Square"
+  },
+  "editor_triangle": {
+    "message": "Triangle"
+  },
+  "editor_image_mode": {
+    "message": "Image display"
+  },
+  "editor_image_x": {
+    "message": "Image X"
+  },
+  "editor_image_y": {
+    "message": "Image Y"
+  },
+  "editor_image_width": {
+    "message": "Image width"
+  },
+  "editor_image_height": {
+    "message": "Image height"
+  },
+  "editor_stage_fallback": {
+    "message": "Using stage 1 background"
+  },
+  "editor_remove_stage": {
+    "message": "Remove this stage image"
+  },
+  "editor_image_bounds": {
+    "message": "Use integer positions from -16384 to 16384px and image sizes from 1 to 16384px."
+  },
+  "editor_source_size": {
+    "message": "Use a static PNG up to 2048 × 2048px and 20 MiB. Final theme PNGs must stay within 2 MiB."
+  },
+  "editor_stage_visible": {
+    "message": "Show this stage"
+  },
+  "editor_align_contain": {
+    "message": "Fit image"
+  },
+  "editor_align_cover": {
+    "message": "Fill frame"
+  },
+  "editor_align_bottom": {
+    "message": "Bottom"
+  },
+  "editor_remove_short": {
+    "message": "Remove image"
+  },
+  "editor_background_help": {
+    "message": "Background help"
+  },
+  "editor_background_handles": {
+    "message": "Drag the image or its handles. Off-frame handles stay on the frame edge. Edges snap within 6 screen pixels."
+  },
+  "editor_text_help": {
+    "message": "Text help"
+  },
+  "editor_placement_background_help": {
+    "message": "Placement area background help"
+  },
+  "editor_transparent_icon_hint": {
+    "message": "Remove image keeps the icon area transparent. Turn off its text component to use the icon area as the action button."
+  },
+  "editor_save_file": {
+    "message": "Save file"
+  },
+  "editor_export_preview_hint": {
+    "message": "Review all background stages and the home screen. Choose Save file to download the ZIP, or return to editing."
+  },
+  "editor_placementBackground": {
+    "message": "Placement area background"
+  },
+  "editor_placement_background_hint": {
+    "message": "Shared by all conversation stages, above the main background and below components. X/Y start at the top-left of the 256 × 168px placement area; anything outside is cropped. Its visibility is independent of the main background. The original default decoration adapts its line color to light/dark mode; solid fill uses your chosen color. A new PNG uses its original colors. Exporting the default decoration alone preserves its adaptive color; merging it with a main picture fixes colors to the current preview. A regular theme ZIP stores the merged image. When both backgrounds are present, an optional recovery ZIP can reopen the two layers separately within their cropped frames."
+  },
+  "editor_stages": {
+    "message": "Background stages"
+  },
+  "editor_help_question": {
+    "message": "How do I customize my theme?"
+  },
+  "editor_help_select": {
+    "message": "Select a component on the right or in the preview."
+  },
+  "editor_help_adjust": {
+    "message": "Adjust its image, text, size and position."
+  },
+  "editor_help_preview": {
+    "message": "Check each stage in Preview appearance."
+  },
+  "editor_recovery_confirm": {
+    "message": "Save a recovery theme too?\nUse the recovery file in the theme editor to edit the two backgrounds separately again. Apply the regular theme file to the extension."
+  },
+  "editor_recovery_saved": {
+    "message": "Requested saving of the regular theme and the recovery theme."
+  },
+  "editor_recovery_open_done": {
+    "message": "Recovery theme opened. You can edit the two backgrounds separately."
+  },
+  "editor_recovery_file_error": {
+    "message": "Could not read this recovery theme. Check that the file is valid."
+  },
+  "editor_recovery_failed": {
+    "message": "Could not create the recovery file. Saving of the regular theme was already requested."
+  },
+  "editor_help_save": {
+    "message": "Choose Save theme, then Save file to keep it."
+  }
+}

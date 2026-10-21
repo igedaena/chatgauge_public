@@ -2,7 +2,8 @@
   position: fixed;
   width: max-content;
   visibility: hidden;
-  z-index: 2147483647;
+  /* Keep site menus above the meter and its tall theme decoration. */
+  z-index: 1;
 }
 
 #chatcouter-root[hidden] {

@@ -8,6 +8,7 @@ test("manifest validation rejects missing and late runtime dependencies", async 
   const entry = manifest.content_scripts[0];
   assert.doesNotThrow(() => validateContentScriptDependencies(entry));
   for (const [dependency, consumer] of [
+    ["src/theme-contract.js", "src/theme-layout.js"],
     ["src/document-viewer.js", "src/content.js"],
     ["src/adapters/chatgpt-dom.js", "src/content.js"],
     ["src/vendor/marked.umd.js", "src/exporters/html.js"],

@@ -5,7 +5,7 @@ const path = require("node:path");
 const vm = require("node:vm");
 const test = require("node:test");
 
-async function harness(stored, { readFails = false, writeFails = false, inputMode, filenameOptions, sendShortcut, locale = "ko", sharedStorage } = {}) {
+async function harness(stored, { readFails = false, writeFails = false, inputMode, filenameOptions, sendShortcut, capacityBackground, locale = "ko", sharedStorage } = {}) {
   const inputs = ["md", "json", "html"].map((value) => ({ value, checked: false }));
   const handlers = {};
   const fieldset = { disabled: true, addEventListener: (name, fn) => { handlers[name] = fn; } };
@@ -18,10 +18,16 @@ async function harness(stored, { readFails = false, writeFails = false, inputMod
   const timeInput = { checked: false };
   const uncheckedInput = { checked: false };
   const modeInput = { checked: false };
+  const capacityFieldset = { disabled: true, addEventListener: (name, fn) => { handlers[`capacity-${name}`] = fn; } };
+  const capacityEnabled = { checked: false };
+  const capacityEntry = { checked: false }, capacityEntrySetting = { hidden: true }, capacityEntryHint = { hidden: true };
+  const capacitySecond = { value: "" }, capacityThird = { value: "" }, capacityError = { hidden: true };
   const status = {};
   const writes = [];
   let preferences = stored;
-  const filenameFields = {};
+  const filenameFields = { capacityBackgroundEnabled: capacityBackground?.enabled,
+    capacityEntryTransition: capacityBackground?.entryTransition,
+    capacityBackgroundLimitsKB: capacityBackground };
   const listeners = new Set();
   const context = vm.createContext({
     document: {
@@ -31,7 +37,10 @@ async function harness(stored, { readFails = false, writeFails = false, inputMod
       getElementById: (id) => ({ "export-formats": fieldset, "refresh-settings": refreshFieldset,
         "update-on-user-input": modeInput, "filename-settings": filenameFieldset,
         "filename-date": dateInput, "filename-time": timeInput, "filename-unchecked": uncheckedInput,
-        "send-key-settings": sendKeyFieldset, "send-key": sendKeyInput, "send-key-clear": sendKeyClear, status })[id],
+        "send-key-settings": sendKeyFieldset, "send-key": sendKeyInput, "send-key-clear": sendKeyClear,
+        "capacity-settings": capacityFieldset, "capacity-enabled": capacityEnabled, "capacity-second": capacitySecond,
+        "capacity-third": capacityThird, "capacity-error": capacityError, "capacity-entry": capacityEntry,
+        "capacity-entry-setting": capacityEntrySetting, "capacity-entry-hint": capacityEntryHint, status })[id],
     },
     browser: { i18n: require("./helpers/i18n.cjs")(locale), storage: sharedStorage || { onChanged: {
       addListener: fn => listeners.add(fn),
@@ -48,7 +57,7 @@ async function harness(stored, { readFails = false, writeFails = false, inputMod
         if (Object.hasOwn(value, "filenameOptions")) filenameOptions = value.filenameOptions;
         if (Object.hasOwn(value, "sendShortcut")) sendShortcut = value.sendShortcut;
         for (const [key, field] of Object.entries(value)) {
-          if (key.startsWith("filenameInclude")) filenameFields[key] = field;
+          if (key.startsWith("filenameInclude") || key.startsWith("capacity")) filenameFields[key] = field;
         }
         const changes = Object.fromEntries(Object.entries(value).map(([key, newValue]) => [key, { newValue }]));
         for (const listener of listeners) listener(changes, "local");
@@ -61,11 +70,79 @@ async function harness(stored, { readFails = false, writeFails = false, inputMod
   await load("src/options/options.js");
   return { context, inputs, fieldset, refreshFieldset, filenameFieldset, dateInput, timeInput, uncheckedInput, modeInput, status, writes,
     sendKeyFieldset, sendKeyInput, sendKeyClear,
+    capacityFieldset, capacityEnabled, capacitySecond, capacityThird, capacityError, capacityEntry, capacityEntrySetting,
+    changeCapacity: target => handlers["capacity-change"]({ target }),
     captureKey: (event) => handlers["send-key-keydown"]({ preventDefault() {}, ...event }),
     clearKey: () => handlers["send-key-clear-click"](),
     changeFilename: (target) => handlers["filename-change"](target ? { target } : undefined),
     change: () => handlers.change(), changeMode: () => handlers["refresh-change"]() };
 }
+
+test("capacity limits autosave as a valid pair, survive OFF and reject invalid drafts in both languages", async () => {
+  for (const locale of ["ko", "en"]) {
+    const h = await harness(["md"], { locale });
+    const settings = h.context.Chatcouter.exportSettings;
+    assert.equal(h.capacityEnabled.checked, true);
+    assert.equal(h.capacitySecond.value, "200");
+    assert.equal(h.capacityThird.value, "400");
+    h.capacitySecond.value = "200"; h.capacityThird.value = "1000";
+    await h.changeCapacity(h.capacityThird);
+    assert.equal((await settings.getCapacityBackground()).secondKB, 200);
+    assert.deepEqual(Object.keys(h.writes[0]), [settings.CAPACITY_LIMITS_KEY]);
+    const count = h.writes.length;
+    for (const value of ["", "-1", "0", "1.5", "1000", "1001"]) {
+      h.capacitySecond.value = value;
+      await h.changeCapacity(h.capacitySecond);
+      assert.equal(h.writes.length, count);
+      assert.equal(h.capacityError.hidden, false);
+      assert.equal((await settings.getCapacityBackground()).secondKB, 200);
+    }
+    h.capacityEnabled.checked = false;
+    await h.changeCapacity(h.capacityEnabled);
+    assert.equal(h.capacitySecond.disabled, true);
+    assert.equal(h.capacitySecond.value, "200");
+    assert.equal(h.capacityThird.value, "1000");
+    h.capacityEnabled.checked = true;
+    await h.changeCapacity(h.capacityEnabled);
+    assert.equal(h.capacitySecond.disabled, false);
+    assert.equal(h.capacitySecond.value, "200");
+    for (const limits of [{ secondKB: 1, thirdKB: 1.5 }, { secondKB: 1, thirdKB: "800" },
+      { secondKB: 1, thirdKB: Infinity }, { secondKB: 1, thirdKB: Number.MAX_SAFE_INTEGER }]) {
+      await assert.rejects(settings.setCapacityBackgroundLimits(limits));
+    }
+  }
+});
+
+test("capacity toggle and atomic limits stay synchronized across option windows and reopening", async () => {
+  const shared = sharedPreferences();
+  const a = await harness(undefined, { sharedStorage: shared.storage });
+  const b = await harness(undefined, { sharedStorage: shared.storage });
+  a.capacitySecond.value = "100"; a.capacityThird.value = "200";
+  await a.changeCapacity(a.capacityThird);
+  assert.equal(b.capacitySecond.value, "100");
+  b.capacityEnabled.checked = false; await b.changeCapacity(b.capacityEnabled);
+  assert.equal(a.capacityEnabled.checked, false);
+  const reopened = await harness(undefined, { sharedStorage: shared.storage });
+  assert.equal(reopened.capacitySecond.value, "100");
+  assert.equal(reopened.capacityThird.value, "200");
+  assert.equal(reopened.capacitySecond.disabled, true);
+  shared.apply({ capacityBackgroundLimitsKB: undefined });
+  assert.equal(a.capacitySecond.value, "200");
+  assert.equal(a.capacityEnabled.checked, false);
+});
+
+test("capacity save failures restore the last valid settings and keep the option controls usable", async () => {
+  const h = await harness(undefined, { writeFails: true, capacityBackground: { enabled: true, secondKB: 10, thirdKB: 20 } });
+  h.capacitySecond.value = "5";
+  await h.changeCapacity(h.capacitySecond);
+  assert.equal(h.capacitySecond.value, "10");
+  assert.equal(h.status.textContent, h.context.Chatcouter.i18n.t("settings_save_failed"));
+  assert.equal(h.capacityFieldset.disabled, false);
+  h.capacityEnabled.checked = false;
+  await h.changeCapacity(h.capacityEnabled);
+  assert.equal(h.capacityEnabled.checked, true);
+  assert.equal(h.capacitySecond.disabled, false);
+});
 
 test("English options preserve selection and storage behavior while reporting localized failures", async () => {
   const h = await harness(["html"], { locale: "en-US", writeFails: true });
@@ -438,7 +515,7 @@ test("startup follows replaced filename reads and only enables settings after th
     const reads = [];
     const originalGet = shared.storage.local.get;
     shared.storage.local.get = key => {
-      if (!Array.isArray(key)) return originalGet(key);
+      if (!Array.isArray(key) || !key.includes("exportFormats")) return originalGet(key);
       const snapshot = { ...shared.stored };
       return new Promise((resolve, reject) => reads.push({
         finish: () => resolve(snapshot), fail: () => reject(Error("latest read failed")),
@@ -475,4 +552,55 @@ test("startup follows replaced filename reads and only enables settings after th
     assert.deepEqual({ ...saved }, { includeDate: false, includeTime: true, includeUnchecked: false });
     assert.equal(h.filenameFieldset.disabled, false, "change handlers are registered and usable");
   }
+});
+
+test("shared options notice keeps the latest operation when earlier work finishes later", async () => {
+  const h = await harness(["md"]), notice = h.context.Chatcouter.optionsNotice;
+  const earlier = notice.begin("first save pending");
+  const later = notice.begin("second save pending");
+  notice.finish(later, "second saved");
+  notice.finish(earlier, "first failed");
+  assert.equal(h.status.textContent, "second saved");
+  const passiveRead = notice.current();
+  notice.begin("invalid draft");
+  notice.finish(passiveRead, "old read failed");
+  assert.equal(h.status.textContent, "invalid draft");
+});
+
+test("entry transition defaults OFF, persists independently and follows other windows and key removal", async () => {
+  for (const locale of ["ko", "en"]) {
+    const shared = sharedPreferences({ capacityBackgroundLimitsKB: { secondKB: 10, thirdKB: 20 } });
+    const a = await harness(undefined, { locale, sharedStorage: shared.storage });
+    const b = await harness(undefined, { locale, sharedStorage: shared.storage });
+    assert.equal(a.capacityEntry.checked, false);
+    assert.equal(a.capacityEntrySetting.hidden, false);
+    a.capacitySecond.value = "invalid draft";
+    a.capacityEntry.checked = true;
+    await a.changeCapacity(a.capacityEntry);
+    assert.equal(b.capacityEntry.checked, true);
+    assert.equal(b.capacitySecond.value, "10");
+    const reopened = await harness(undefined, { sharedStorage: shared.storage });
+    assert.equal(reopened.capacityEntry.checked, true);
+    b.capacitySecond.value = "11"; await b.changeCapacity(b.capacitySecond);
+    assert.equal(a.capacityEntry.checked, true, "limit notifications preserve the independent toggle");
+    b.capacityEnabled.checked = false; await b.changeCapacity(b.capacityEnabled);
+    assert.equal(a.capacityEntry.checked, true, "background OFF preserves preference");
+    shared.apply({ capacityEntryTransition: undefined });
+    assert.equal(a.capacityEntry.checked, false);
+    assert.equal(b.capacityEntry.checked, false);
+    assert.equal((await a.context.Chatcouter.exportSettings.getCapacityBackground()).entryTransition, false);
+  }
+});
+
+test("entry transition save failure restores OFF and disabling the experiment ignores saved ON", async () => {
+  const h = await harness(undefined, { writeFails: true });
+  h.capacityEntry.checked = true; await h.changeCapacity(h.capacityEntry);
+  assert.equal(h.capacityEntry.checked, false);
+  assert.equal(h.capacityFieldset.disabled, false);
+  const context = vm.createContext({ browser: { storage: { local: {
+    get: async () => ({ capacityEntryTransition: true }), set: async () => {},
+  } } } });
+  vm.runInContext(fs.readFileSync("src/export-settings.js", "utf8").replace("CAPACITY_ENTRY_AVAILABLE = true", "CAPACITY_ENTRY_AVAILABLE = false"), context);
+  assert.equal((await context.Chatcouter.exportSettings.getCapacityBackground()).entryTransition, false);
+  assert.equal(await context.Chatcouter.exportSettings.setCapacityEntryTransition(true), false);
 });

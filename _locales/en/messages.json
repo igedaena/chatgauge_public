@@ -1,4 +1,38 @@
 {
+  "export_failed_status": {
+    "message": "Export failed",
+    "description": "Unified usage area document failure"
+  },
+  "expand_failed_status": {
+    "message": "Could not open view",
+    "description": "Unified usage area document failure"
+  },
+  "options_help": {
+    "message": "Help",
+    "description": "Settings section help disclosure"
+  },
+  "capacity_heading": {
+    "message": "Background switching"
+  },
+  "capacity_enabled": {
+    "message": "Switch background by conversation size"
+  },
+  "capacity_second": {
+    "message": "Stage 2 threshold"
+  },
+  "capacity_third": {
+    "message": "Stage 3 threshold"
+  },
+  "capacity_hint": {
+    "message": "Applies to all conversations. Switches to a stage when the measured size exceeds its threshold (1 KB = 1024 bytes). Uses the latest published measurement without extra requests. Turning this off shows stage 1 and preserves thresholds."
+  },
+  "capacity_invalid": {
+    "message": "Use positive whole numbers with the first limit below the second. The last saved limits remain active."
+  },
+  "entry_time": {
+    "message": "Entered: $1",
+    "description": "Local time when this conversation was detected"
+  },
   "extension_description": {
     "message": "Measure and export the text stored in the active ChatGPT conversation.",
     "description": "ChatGauge extension description"
@@ -374,5 +408,50 @@
   "expand_failed_hint": {
     "message": "Could not open the conversation view ($1). Select View to try again.",
     "description": "Conversation view expand_failed_hint"
+  },
+  "entry_enabled": {
+    "message": "Show conversation entry time"
+  },
+  "theme_enabled": {
+    "message": "Enable user theme"
+  },
+  "theme_import": {
+    "message": "Import theme"
+  },
+  "theme_loaded": {
+    "message": "A user theme is saved."
+  },
+  "theme_default_active": {
+    "message": "Using the default theme until a valid theme is imported."
+  },
+  "theme_import_failed": {
+    "message": "Could not load or save the theme. Choose a ZIP exported by the theme editor. The previous theme is kept."
+  },
+  "capacity_missing": {
+    "message": "If an image for a stage is missing, the first background is used."
+  },
+  "capacity_entry": {
+    "message": "Show stage 2 before stage 3 on entry"
+  },
+  "capacity_entry_hint": {
+    "message": "If the first measurement after entry reaches stage 3, show stage 2 for 1.5 seconds first. Usage appears immediately."
+  },
+  "settings_reset": {
+    "message": "Reset all settings"
+  },
+  "settings_reset_hint": {
+    "message": "Restore all extension settings and remove the user theme stored in this extension."
+  },
+  "settings_reset_confirm": {
+    "message": "Restore all extension settings to defaults and delete the user theme stored in this extension? The built-in default theme will be used. Theme files saved outside the extension will remain."
+  },
+  "settings_resetting": {
+    "message": "Resetting…"
+  },
+  "settings_reset_done": {
+    "message": "All settings and the stored user theme have been reset."
+  },
+  "settings_reset_failed": {
+    "message": "Could not reset settings. Please try again."
   }
 }

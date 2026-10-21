@@ -42,6 +42,13 @@
   let exportRequest = null;
   let exportError = "";
   let expandError = "";
+  let documentAction = "";
+  let visitConversationId = "";
+  let enteredAt = null;
+  let entryBackground = { published: false, done: false, stage: undefined, timer: null };
+  let capacityReady = false, themeReady = false, userThemeApplied = false, appliedTheme = null;
+  let showEntryTime = false;
+  let entryRevision = 0;
   let startupRetries = 0;
   let awaitingResponse = false;
   let pendingConversationCreation = false;
@@ -81,6 +88,8 @@
   let measureDisplay = { primary: "ChatGauge", secondary: "" };
   let measureTitle = t("automatic_measure_hint");
   let lastMeasuredDisplay = null;
+  let capacityBackground = exportSettings.normalizeCapacityBackground();
+  const capacityRevisions = { enabled: 0, limits: 0, entry: 0 };
   let updateOnUserInput = false;
   let desiredUpdateOnUserInput = false;
   let sendShortcut = null;
@@ -89,6 +98,25 @@
   let settingChangedDuringLoad = false;
   global.browser.storage.onChanged?.addListener((changes, area) => {
     if (area !== "local") return;
+    const appearance = global.Chatcouter.themeSettings;
+    if (appearance && Object.hasOwn(changes, appearance.ENTRY)) {
+      entryRevision++; showEntryTime = changes[appearance.ENTRY].newValue === true; renderUi();
+    }
+    if (appearance && [appearance.ENABLED, appearance.THEME].some(key => Object.hasOwn(changes, key))) refreshTheme(true);
+    if ([exportSettings.CAPACITY_ENABLED_KEY, exportSettings.CAPACITY_LIMITS_KEY, exportSettings.CAPACITY_ENTRY_KEY].some(key => Object.hasOwn(changes, key))) {
+      cancelEntryBackground();
+      if (Object.hasOwn(changes, exportSettings.CAPACITY_ENABLED_KEY)) capacityRevisions.enabled++;
+      if (Object.hasOwn(changes, exportSettings.CAPACITY_LIMITS_KEY)) capacityRevisions.limits++;
+      if (Object.hasOwn(changes, exportSettings.CAPACITY_ENTRY_KEY)) capacityRevisions.entry++;
+      const limits = Object.hasOwn(changes, exportSettings.CAPACITY_LIMITS_KEY)
+        ? changes[exportSettings.CAPACITY_LIMITS_KEY].newValue : capacityBackground;
+      const enabled = Object.hasOwn(changes, exportSettings.CAPACITY_ENABLED_KEY)
+        ? changes[exportSettings.CAPACITY_ENABLED_KEY].newValue : capacityBackground.enabled;
+      const entryTransition = Object.hasOwn(changes, exportSettings.CAPACITY_ENTRY_KEY)
+        ? changes[exportSettings.CAPACITY_ENTRY_KEY].newValue : capacityBackground.entryTransition;
+      capacityBackground = exportSettings.normalizeCapacityBackground({ ...limits, enabled, entryTransition });
+      renderUi();
+    }
     if (Object.hasOwn(changes, exportSettings.UPDATE_ON_INPUT_KEY)) {
       desiredUpdateOnUserInput = exportSettings.normalizeUpdateOnUserInput(
         changes[exportSettings.UPDATE_ON_INPUT_KEY].newValue,
@@ -100,6 +128,15 @@
       sendShortcutChanged = true;
     }
   });
+  exportSettings.getCapacityBackground().then(value => {
+    capacityBackground = exportSettings.normalizeCapacityBackground({
+      ...(capacityRevisions.limits ? capacityBackground : value),
+      enabled: capacityRevisions.enabled ? capacityBackground.enabled : value.enabled,
+      entryTransition: capacityRevisions.entry ? capacityBackground.entryTransition : value.entryTransition,
+    });
+    capacityReady = true;
+    renderUi();
+  }).catch(() => diagnose("capacity-settings-unavailable", { reason: "storage-read-failed" }));
   exportSettings.getSendShortcut().then((value) => {
     if (!sendShortcutChanged) sendShortcut = value;
   }).catch(() => {
@@ -132,20 +169,97 @@
     onExport: () => exportFresh(),
     onExpand: () => exportFresh({ view: true }),
     onOptions: openOptionsFromHome,
+    layout: null,
   });
+  const themeSettings = global.Chatcouter.themeSettings;
+  const defaultTheme = global.Chatcouter.themeLayout.loadSample({ runtime: global.browser.runtime,
+    fetch: (...args) => global.fetch(...args), Image: global.Image });
+  let themeRevision = 0;
+  let themeInstalled = false;
+  async function refreshTheme(changed = false) {
+    if (changed) cancelEntryBackground();
+    themeReady = false;
+    const revision = ++themeRevision;
+    const entryAtStart = entryRevision;
+    let custom = false;
+    try {
+      const preferences = themeSettings ? await themeSettings.get() : { enabled: false, entry: false };
+      if (revision !== themeRevision) return;
+      if (entryAtStart === entryRevision) showEntryTime = preferences.entry;
+      renderUi();
+      custom = preferences.enabled && Boolean(preferences.stored);
+      const next = custom
+        ? await themeSettings.layout(preferences.stored) : await defaultTheme;
+      if (revision !== themeRevision) return;
+      ui.setLayout(next); themeInstalled = true; themeReady = true;
+      appliedTheme = next; userThemeApplied = custom; renderUi();
+    } catch (error) {
+      if (revision !== themeRevision) return;
+      diagnose(custom ? "theme-user-unavailable" : "theme-sample-unavailable", { reason: "theme-validation-failed" });
+      if (!themeInstalled && custom) {
+        try {
+          const fallback = await defaultTheme;
+          if (revision !== themeRevision) return;
+          ui.setLayout(fallback); themeInstalled = true; themeReady = true;
+          appliedTheme = fallback; userThemeApplied = false; renderUi();
+        } catch { /* Leave the existing controls usable when the bundled files also fail. */ }
+      }
+    }
+  }
+  // Observe only local appearance preferences; measurement and refresh policy stay independent.
+  defaultTheme.catch(() => {});
+  refreshTheme();
 
   function currentRoute() {
     return `${location.pathname}${location.search}`;
   }
 
+  function cancelEntryBackground() {
+    global.clearTimeout(entryBackground.timer);
+    entryBackground.timer = null; entryBackground.stage = undefined;
+    if (entryBackground.published) entryBackground.done = true;
+  }
+
+  function updateEntryBackground(conversationId) {
+    const entry = entryBackground, sources = appliedTheme?.conversation.background?.sources;
+    const eligible = userThemeApplied && capacityBackground.enabled && capacityBackground.entryTransition
+      && currentPageKind() === "conversation" && sources?.[1] && sources?.[2]
+      && lastMeasuredDisplay?.conversationId === conversationId
+      && lastMeasuredDisplay.utf8Bytes > capacityBackground.thirdKB * 1024;
+    if (entry.timer !== null && !eligible) cancelEntryBackground();
+    if (!entry.published || entry.done || !capacityReady || !themeReady) return;
+    entry.done = true;
+    if (!eligible) return;
+    entry.stage = 1;
+    // Presentation only: measurement, publication and document actions never wait for this timer.
+    entry.timer = global.setTimeout(() => {
+      if (entry !== entryBackground) return;
+      entry.timer = null; entry.stage = undefined; renderUi();
+    }, 1500);
+  }
+
   function renderUi() {
+    // Reuse existing route/render observations: no new polling or requests.
+    const conversationId = apiAdapter.getConversationId() || "";
+    if (conversationId !== visitConversationId) {
+      cancelEntryBackground();
+      entryBackground = { published: false, done: false, stage: undefined, timer: null };
+      visitConversationId = conversationId;
+      enteredAt = conversationId ? Date.now() : null;
+    }
+    updateEntryBackground(conversationId);
     ui.render({
       pageKind: currentPageKind(),
-      conversationId: apiAdapter.getConversationId(),
+      conversationId,
+      enteredAt,
+      showEntryTime,
+      documentAction,
       state: measureState,
       display: measureDisplay,
       title: measureTitle,
       lastMeasuredDisplay,
+      capacityBackground,
+      backgroundStageOverride: entryBackground.stage,
       baselineBusy: Boolean(baselineRequest),
       exportBusy: Boolean(exportRequest && !exportRequest.view),
       exportError,
@@ -264,10 +378,12 @@
 
     lastMeasuredDisplay = {
       conversationId: apiAdapter.getConversationId(),
+      utf8Bytes: totals.utf8Bytes,
       charactersText: isFull ? number(totals.characters) : t("screen_number", number(totals.characters)),
       primary: t("character_count", isFull ? number(totals.characters) : t("screen_number", number(totals.characters))),
       secondary: model.formatBytes(totals.utf8Bytes),
     };
+    entryBackground.published = true;
     render(
       isFull ? "ready" : "fallback",
       lastMeasuredDisplay.primary,
@@ -379,6 +495,7 @@
     const request = new AbortController();
     request.view = view;
     exportRequest = request;
+    documentAction = view ? "expand" : "export";
     if (view) expandError = "";
     else exportError = "";
     const token = refreshEpoch.capture({ conversationId, route: currentRoute() });
@@ -463,6 +580,7 @@
   }
 
   function advanceRefreshEpoch(reason) {
+    cancelEntryBackground();
     const epoch = refreshEpoch.advance();
     baselineRequest?.abort();
     baselineRequest = null;
@@ -478,6 +596,7 @@
     exportRequest = null;
     exportError = "";
     expandError = "";
+    documentAction = "";
   }
 
   function cancelResponseTriggerFallback() {

@@ -1,4 +1,38 @@
 {
+  "export_failed_status": {
+    "message": "내보내기 실패",
+    "description": "Unified usage area document failure"
+  },
+  "expand_failed_status": {
+    "message": "펼쳐보기 실패",
+    "description": "Unified usage area document failure"
+  },
+  "options_help": {
+    "message": "도움말",
+    "description": "Settings section help disclosure"
+  },
+  "capacity_heading": {
+    "message": "배경 전환"
+  },
+  "capacity_enabled": {
+    "message": "대화 용량에 따라 배경 전환"
+  },
+  "capacity_second": {
+    "message": "2단계 전환 기준"
+  },
+  "capacity_third": {
+    "message": "3단계 전환 기준"
+  },
+  "capacity_hint": {
+    "message": "모든 대화방에 공통 적용합니다. 설정한 용량을 초과하면 해당 단계로 전환합니다(1KB = 1024바이트). 추가 조회 없이 마지막 측정값으로 적용합니다. 끄면 1단계 배경을 표시하며 설정한 용량은 유지합니다."
+  },
+  "capacity_invalid": {
+    "message": "양의 정수를 입력하고 첫 기준을 둘째 기준보다 작게 설정하세요. 마지막으로 저장한 기준은 유지됩니다."
+  },
+  "entry_time": {
+    "message": "입장: $1",
+    "description": "Local time when this conversation was detected"
+  },
   "extension_description": {
     "message": "활성 ChatGPT 대화에 저장된 텍스트를 측정하고 내보냅니다.",
     "description": "ChatGauge extension description"
@@ -374,5 +408,50 @@
   "expand_failed_hint": {
     "message": "대화를 펼치지 못했습니다 ($1). 펼쳐보기를 눌러 다시 시도하세요.",
     "description": "Conversation view expand_failed_hint"
+  },
+  "entry_enabled": {
+    "message": "대화방 입장 시각 표시"
+  },
+  "theme_enabled": {
+    "message": "사용자 테마 활성화"
+  },
+  "theme_import": {
+    "message": "테마 불러오기"
+  },
+  "theme_loaded": {
+    "message": "사용자 테마가 저장되어 있습니다."
+  },
+  "theme_default_active": {
+    "message": "테마를 불러오기 전까지 기본 테마를 사용합니다."
+  },
+  "theme_import_failed": {
+    "message": "테마를 불러오거나 저장하지 못했습니다. 제작기에서 내보낸 ZIP을 선택해 주세요. 기존 테마는 유지됩니다."
+  },
+  "capacity_missing": {
+    "message": "해당 단계의 배경 이미지가 없으면 기본 배경(1단계)을 사용합니다."
+  },
+  "capacity_entry": {
+    "message": "입장 시 2단계를 거쳐 3단계 표시"
+  },
+  "capacity_entry_hint": {
+    "message": "입장 후 첫 측정 결과가 3단계이면 2단계를 1.5초간 먼저 표시합니다. 사용량은 즉시 표시됩니다."
+  },
+  "settings_reset": {
+    "message": "전체 설정 초기화"
+  },
+  "settings_reset_hint": {
+    "message": "모든 확장 설정과 확장에 저장한 사용자 테마를 초기화합니다."
+  },
+  "settings_reset_confirm": {
+    "message": "모든 확장 설정을 기본값으로 되돌리고 확장에 저장한 사용자 테마를 삭제할까요? 내장 기본 테마로 돌아갑니다. 외부에 보관한 테마 파일은 유지됩니다."
+  },
+  "settings_resetting": {
+    "message": "초기화 중…"
+  },
+  "settings_reset_done": {
+    "message": "모든 설정과 저장된 사용자 테마를 초기화했습니다."
+  },
+  "settings_reset_failed": {
+    "message": "초기화하지 못했습니다. 다시 시도해 주세요."
   }
 }

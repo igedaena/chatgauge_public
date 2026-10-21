@@ -5,13 +5,19 @@ import { fileURLToPath } from "node:url";
 
 // Stage only runtime files for web-ext lint/build. Never include development data.
 const root = fileURLToPath(new URL("../", import.meta.url));
-const output = path.join(root, "dist", "amo", "runtime");
+const args = process.argv.slice(2);
+if (args.length && (args.length !== 2 || args[0] !== "--output" || !args[1])) {
+  throw new Error("Usage: node scripts/prepare-amo-package.mjs [--output <new-runtime-directory-under-dist>]");
+}
+const output = path.resolve(root, args[1] || "dist/amo/runtime");
+if (!output.startsWith(path.join(root, "dist") + path.sep)) throw new Error("Output must be inside dist");
 const manifest = JSON.parse(await readFile(path.join(root, "manifest.json"), "utf8"));
 const files = [...new Set([
   "manifest.json", "LICENSE", ...Object.values(manifest.icons),
   ...manifest.background.scripts,
+  ...(manifest.web_accessible_resources || []).flatMap(entry => entry.resources),
   ...manifest.content_scripts.flatMap(entry => [...entry.js, ...entry.css]),
-  manifest.options_ui.page, "src/options/options.js", "src/options/options.css",
+  manifest.options_ui.page, "src/options/options-reset.js", "src/options/options.js", "src/options/theme-options.js", "src/options/options.css",
   "src/viewer/viewer.html", "src/viewer/viewer.js", "src/viewer/viewer.css",
   "src/vendor/README.md", "src/vendor/marked.LICENSE.md",
   "_locales/en/messages.json", "_locales/ko/messages.json",
@@ -56,4 +62,4 @@ await writeFile(path.join(path.dirname(output), "runtime-files.json"), JSON.stri
   version: manifest.version, id: manifest.browser_specific_settings.gecko.id, hashes,
 }, null, 2) + "\n", { flag: "wx" });
 console.log(`Staged ${files.length} files for ${manifest.name} ${manifest.version} (${manifest.browser_specific_settings.gecko.id})`);
-console.log("Run web-ext lint and web-ext build with --source-dir dist/amo/runtime.");
+console.log(`Run web-ext lint and web-ext build with --source-dir ${output}.`);

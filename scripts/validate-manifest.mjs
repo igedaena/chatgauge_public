@@ -15,7 +15,7 @@ for (const key of Object.keys(catalogs[0])) {
 for (const value of [manifest.description, manifest.action.default_title]) {
   assert.ok(catalogs[0][value.match(/^__MSG_(\w+)__$/)?.[1]], "Manifest locale key must exist");
 }
-for (const file of ["src/content.js", "src/meter-ui.js", "src/options/options.js", "src/options/options.html",
+for (const file of ["src/content.js", "src/meter-ui.js", "src/options/options.js", "src/options/theme-options.js", "src/options/options.html",
   "src/exporters/fresh.js", "src/exporters/display-markup.js", "src/exporters/markdown.js", "src/exporters/html.js", "src/viewer/viewer.js"]) {
   const source = await readFile(new URL(`../${file}`, import.meta.url), "utf8");
   for (const match of source.matchAll(/\bt\("([\w]+)"|data-i18n="([\w]+)"/g)) {
@@ -24,6 +24,8 @@ for (const file of ["src/content.js", "src/meter-ui.js", "src/options/options.js
 }
 const optionsHtml = await readFile(new URL("../src/options/options.html", import.meta.url), "utf8");
 assert.ok(optionsHtml.indexOf("../i18n.js") < optionsHtml.indexOf("options.js"), "Options must register i18n before use");
+assert.ok(!optionsHtml.includes("theme-editor"), "The separately distributed editor must not be linked into extension options");
+assert.ok(Object.keys(catalogs[0]).every(key => !key.startsWith("editor_")), "Editor translations belong to the standalone tool");
 assert.deepEqual(manifest.permissions, ["storage"], "Only local export preferences need an API permission");
 assert.deepEqual(Object.keys(manifest.icons), ["16", "32", "48", "64", "96", "128"]);
 assert.deepEqual(Object.keys(manifest.action.default_icon), ["16", "32", "64"]);
@@ -36,7 +38,13 @@ for (const icons of [manifest.icons, manifest.action.default_icon]) {
     assert.equal(png[25], 6, `${file} must retain RGBA transparency`);
   }
 }
-assert.equal(manifest.web_accessible_resources, undefined, "Viewer is not exposed to websites");
+assert.deepEqual(manifest.web_accessible_resources, [{
+  resources: ["src/themes/default-sample.json", "src/themes/default-sample.png"],
+  matches: manifest.host_permissions,
+}], "Only the bundled theme assets are exposed to supported hosts");
+for (const entry of manifest.web_accessible_resources) {
+  for (const file of entry.resources) await access(new URL(`../${file}`, import.meta.url));
+}
 assert.deepEqual(manifest.background.scripts, ["src/view-background.js"]);
 for (const file of [...manifest.background.scripts, "src/viewer/viewer.html", "src/viewer/viewer.js", "src/viewer/viewer.css"]) {
   await access(new URL(`../${file}`, import.meta.url));
@@ -45,7 +53,7 @@ const viewerHtml = await readFile(new URL("../src/viewer/viewer.html", import.me
 assert.ok(viewerHtml.indexOf("../i18n.js") < viewerHtml.indexOf("viewer.js"));
 assert.equal(manifest.action.default_popup, "src/options/options.html");
 assert.equal(manifest.options_ui.page, manifest.action.default_popup);
-for (const file of [manifest.action.default_popup, "src/i18n.js", "src/options/options.js", "src/options/options.css"]) {
+for (const file of [manifest.action.default_popup, "src/i18n.js", "src/options/options-reset.js", "src/options/options.js", "src/options/theme-options.js", "src/options/options.css"]) {
   await access(new URL(`../${file}`, import.meta.url));
 }
 assert.deepEqual(manifest.host_permissions, [
@@ -75,9 +83,12 @@ export function validateContentScriptDependencies(entry) {
     "src/adapters/chatgpt-dom.js": ["src/model.js"],
     "src/conversation-snapshot.js": ["src/adapters/chatgpt-api.js", "src/adapters/chatgpt-dom.js", "src/refresh-policy.js"],
     "src/exporters/fresh.js": ["src/i18n.js", "src/conversation-snapshot.js", "src/exporters/common.js", "src/exporters/markdown.js", "src/exporters/json.js", "src/exporters/html.js", "src/exporters/zip.js"],
-    "src/meter-ui.js": ["src/i18n.js", "src/ui-position.js"],
+    "src/theme-package.js": ["src/theme-contract.js", "src/exporters/zip.js"],
+    "src/theme-settings.js": ["src/theme-package.js"],
+    "src/theme-layout.js": ["src/theme-contract.js"],
+    "src/meter-ui.js": ["src/i18n.js", "src/ui-position.js", "src/theme-layout.js"],
     "src/document-viewer.js": [],
-    "src/content.js": ["src/i18n.js", "src/model.js", "src/export-settings.js", "src/adapters/chatgpt-api.js", "src/adapters/chatgpt-dom.js", "src/refresh-policy.js", "src/conversation-snapshot.js", "src/exporters/fresh.js", "src/meter-ui.js", "src/document-viewer.js"],
+    "src/content.js": ["src/theme-settings.js", "src/i18n.js", "src/model.js", "src/export-settings.js", "src/adapters/chatgpt-api.js", "src/adapters/chatgpt-dom.js", "src/refresh-policy.js", "src/conversation-snapshot.js", "src/exporters/fresh.js", "src/meter-ui.js", "src/document-viewer.js"],
   };
   for (const [consumer, required] of Object.entries(dependencies)) {
     const index = entry.js.indexOf(consumer);

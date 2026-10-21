@@ -8,6 +8,7 @@ module.exports = function meterDom(nodes) {
       this.tagName = tagName;
       this.namespaceURI = namespaceURI;
       this.dataset = {};
+      this.style = {};
       this.listeners = {};
       this.attributes = {};
       this.children = [];
@@ -33,6 +34,7 @@ module.exports = function meterDom(nodes) {
       return this.children.flatMap(child => [...(matches(child) ? [child] : []), ...child.querySelectorAll(selector)]);
     }
     append(...children) { this.children.push(...children); }
+    replaceChildren(...children) { this.text = ""; this.children = children; }
     addEventListener(name, callback) { this.listeners[name] = callback; }
     attachShadow() { return this.shadowRoot = new this.constructor("shadow-root"); }
     closest() { return null; }

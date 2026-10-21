@@ -1,0 +1,202 @@
+{
+  "version": "chatgauge-theme-2",
+  "atlas": {
+    "width": 787,
+    "height": 640,
+    "sha256": "a4559a09a24b8fb0487d3012d664dc25ad8b7cda249d1799115cca29fad0280e"
+  },
+  "conversation": {
+    "width": 256,
+    "height": 168,
+    "bottomOffset": 24,
+    "background": {
+      "width": 256,
+      "height": 640,
+      "sources": [
+        {
+          "x": 19,
+          "y": 0,
+          "width": 256,
+          "height": 640
+        },
+        {
+          "x": 275,
+          "y": 0,
+          "width": 256,
+          "height": 640
+        },
+        {
+          "x": 531,
+          "y": 0,
+          "width": 256,
+          "height": 640
+        }
+      ],
+      "color": "line"
+    },
+    "components": {
+      "symbol": {
+        "x": 22,
+        "y": 55,
+        "width": 12,
+        "height": 18,
+        "paint": [
+          {
+            "source": {
+              "x": 0,
+              "y": 0,
+              "width": 8,
+              "height": 14
+            },
+            "color": "status"
+          }
+        ],
+        "enabled": true
+      },
+      "measure": {
+        "x": 40,
+        "y": 52,
+        "width": 95,
+        "height": 24,
+        "text": {
+          "family": "system-ui",
+          "size": 13,
+          "weight": 500,
+          "color": "ink"
+        },
+        "enabled": true
+      },
+      "secondary": {
+        "x": 40,
+        "y": 32,
+        "width": 95,
+        "height": 20,
+        "text": {
+          "family": "system-ui",
+          "size": 13,
+          "weight": 400,
+          "color": "muted"
+        },
+        "enabled": true
+      },
+      "expand": {
+        "x": 142,
+        "y": 54,
+        "width": 52,
+        "height": 22,
+        "text": {
+          "family": "system-ui",
+          "size": 12,
+          "weight": 400,
+          "color": "muted",
+          "align": "right"
+        },
+        "enabled": true
+      },
+      "expandIcon": {
+        "x": 194,
+        "y": 54,
+        "width": 18,
+        "height": 22,
+        "paint": [
+          {
+            "source": {
+              "x": 0,
+              "y": 14,
+              "width": 14,
+              "height": 14
+            },
+            "color": "muted"
+          }
+        ],
+        "enabled": true
+      },
+      "export": {
+        "x": 142,
+        "y": 32,
+        "width": 52,
+        "height": 22,
+        "text": {
+          "family": "system-ui",
+          "size": 12,
+          "weight": 400,
+          "color": "muted",
+          "align": "right"
+        },
+        "enabled": true
+      },
+      "exportIcon": {
+        "x": 194,
+        "y": 32,
+        "width": 18,
+        "height": 22,
+        "paint": [
+          {
+            "source": {
+              "x": 0,
+              "y": 28,
+              "width": 14,
+              "height": 14
+            },
+            "color": "muted"
+          }
+        ],
+        "enabled": true
+      },
+      "entryTime": {
+        "x": 157,
+        "y": 9,
+        "width": 55,
+        "height": 19,
+        "text": {
+          "family": "system-ui",
+          "size": 12,
+          "weight": 400,
+          "color": "muted",
+          "align": "right"
+        },
+        "enabled": true
+      }
+    }
+  },
+  "idle": {
+    "width": 168,
+    "height": 64,
+    "verticalAlign": "center",
+    "background": null,
+    "components": {
+      "symbol": {
+        "x": 5,
+        "y": 13,
+        "width": 23,
+        "height": 38,
+        "paint": [
+          {
+            "source": {
+              "x": 0,
+              "y": 42,
+              "width": 19,
+              "height": 34
+            },
+            "color": "line"
+          }
+        ],
+        "enabled": true
+      },
+      "measure": {
+        "x": 35,
+        "y": 18,
+        "width": 90,
+        "height": 28,
+        "text": {
+          "family": "system-ui",
+          "size": 15,
+          "weight": 400,
+          "color": "ink",
+          "align": "center"
+        },
+        "enabled": true
+      }
+    }
+  }
+}

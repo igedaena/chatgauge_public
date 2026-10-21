@@ -7,7 +7,7 @@ const test = require("node:test");
 const path = require("node:path");
 const readZip = require("./helpers/read-zip.cjs");
 
-function harness(formats = ["md"], { inputMode = false, modeRead, filenameOptions, sendShortcut, shortcutRead, locale = "ko" } = {}) {
+function harness(formats = ["md"], { inputMode = false, modeRead, filenameOptions, sendShortcut, shortcutRead, capacityRead, locale = "ko", now, themeRead } = {}) {
   const messages = [
     { id: "u1", role: "user", text: "new prompt" },
     { id: "a1", role: "assistant", text: "fresh answer" },
@@ -42,6 +42,7 @@ function harness(formats = ["md"], { inputMode = false, modeRead, filenameOption
   const timers = new Map();
   let timerId = 0;
   let preferenceListener;
+  const appearanceValues = {};
   const MeterElement = require("./helpers/meter-dom.cjs")(nodes);
   class Element extends MeterElement {
     click() { downloads.push(this.download); }
@@ -63,9 +64,21 @@ function harness(formats = ["md"], { inputMode = false, modeRead, filenameOption
     location: { pathname: "/c/one", search: "" },
     Element,
     AbortController,
-    Blob,
+    Date: class extends Date { static now() { return now ? now() : super.now(); } },
+    Blob, atob, btoa,
     TextEncoder,
+    TextDecoder,
+    crypto: { subtle: { digest: async (_, bytes) => require("node:crypto").createHash("sha256").update(bytes).digest() } },
+    fetch: async url => ({ ok: true, arrayBuffer: async () => url.endsWith(".png")
+      ? fs.readFileSync(path.join(__dirname, "../src/themes/default-sample.png"))
+      : new TextEncoder().encode(JSON.stringify(themeRead ? await themeRead() : JSON.parse(fs.readFileSync(path.join(__dirname, "../src/themes/default-sample.json"), "utf8")))) }),
+    Image: class {
+      naturalWidth = fs.readFileSync(path.join(__dirname, "../src/themes/default-sample.png")).readUInt32BE(16);
+      naturalHeight = fs.readFileSync(path.join(__dirname, "../src/themes/default-sample.png")).readUInt32BE(20);
+      async decode() {}
+    },
     browser: { i18n: require("./helpers/i18n.cjs")(locale), runtime: {
+      getURL: file => `moz-extension://synthetic/${file}`,
       connect({ name }) {
         const port = { name, onMessage: portEvent(), onDisconnect: portEvent(), messages: [], disconnected: false,
           postMessage(message) { this.messages.push(message); if (viewResult) queueMicrotask(() => this.onMessage.emit(viewResult)); },
@@ -74,10 +87,11 @@ function harness(formats = ["md"], { inputMode = false, modeRead, filenameOption
       },
     }, storage: {
       local: { get: async (key) => {
-        if (Array.isArray(key)) exportPreferenceReads++;
+        if (Array.isArray(key) && key.includes("exportFormats")) exportPreferenceReads++;
+        if (Array.isArray(key) && key.includes("capacityBackgroundEnabled") && capacityRead) return capacityRead();
         return key === "updateOnUserInput" && modeRead
           ? modeRead() : key === "sendShortcut" && shortcutRead ? shortcutRead()
-            : ({ exportFormats: formats, updateOnUserInput: inputMode, filenameOptions, sendShortcut });
+            : ({ exportFormats: formats, updateOnUserInput: inputMode, filenameOptions, sendShortcut, ...appearanceValues });
       } },
       onChanged: { addListener(fn) { preferenceListener = fn; } },
     } },
@@ -128,9 +142,17 @@ function harness(formats = ["md"], { inputMode = false, modeRead, filenameOption
     unverified: () => logs.map(([, text]) => JSON.parse(text)).findLast(entry => entry.event === "unverified-response-streak")?.current ?? 0,
     timerCount: () => timers.size,
     hasDelay: (delay) => [...timers.values()].some(timer => timer.delay === delay),
+    peekDelay: delay => [...timers.values()].find(timer => timer.delay === delay)?.fn,
     setExtract: (fn) => { extract = fn; },
+    changeAppearance(patch) {
+      Object.assign(appearanceValues, patch);
+      preferenceListener(Object.fromEntries(Object.entries(patch).map(([key, newValue]) => [key, { newValue }])), "local");
+    },
     changeMode(value, area = "local") {
       preferenceListener({ updateOnUserInput: { newValue: value } }, area);
+    },
+    changeCapacity(value, area = "local") {
+      preferenceListener(Object.fromEntries(Object.entries(value).map(([key, newValue]) => [key, { newValue }])), area);
     },
     changeShortcut(value, area = "local") {
       preferenceListener({ sendShortcut: { newValue: value } }, area);
@@ -177,6 +199,56 @@ test("home settings click is localized, independent of measurement and retryable
     assert.equal(h.nodes[".measure"].dataset.action, "measure");
     assert.notEqual(h.nodes[".measure"].title, h.context.Chatcouter.i18n.t("options_open_failed_hint"));
   }
+});
+
+test("entry time belongs to the detected visit and survives redraw, query changes and page return", async () => {
+  let clock = Date.UTC(2026, 9, 17, 2, 0, 0);
+  const h = harness(["md"], { now: () => clock });
+  await finishAdmission(h);
+  const first = h.nodes[".entry-time"].textContent;
+  const requests = h.requests(), timers = h.timerCount();
+  clock += 60000;
+  h.context.document.host = null;
+  h.context.observe([]);
+  assert.equal(h.nodes[".entry-time"].textContent, first);
+  assert.equal(h.requests(), requests);
+  assert.equal(h.timerCount(), timers);
+  h.context.location.search = "?display=changed";
+  h.windowHandlers.popstate();
+  assert.equal(h.nodes[".entry-time"].textContent, first);
+  h.windowHandlers.pageshow();
+  assert.equal(h.nodes[".entry-time"].textContent, first);
+  h.context.location.pathname = "/c/two";
+  h.windowHandlers.popstate();
+  assert.notEqual(h.nodes[".entry-time"].textContent, first);
+  const second = h.nodes[".entry-time"].textContent;
+  h.context.location.pathname = "/";
+  h.windowHandlers.popstate();
+  assert.equal(h.context.document.host.shadowRoot.querySelector(".entry-time"), null);
+  clock += 60000;
+  h.context.location.pathname = "/c/two";
+  h.windowHandlers.popstate();
+  assert.notEqual(h.nodes[".entry-time"].textContent, second);
+  const reloaded = harness(["md"], { now: () => clock + 60000 });
+  await flushAsync();
+  assert.notEqual(reloaded.nodes[".entry-time"].textContent, h.nodes[".entry-time"].textContent);
+});
+
+test("a successful later action cannot resurrect an earlier action failure", async () => {
+  const h = harness();
+  await finishAdmission(h);
+  const value = h.nodes[".primary"].textContent, capacity = h.nodes[".secondary"].textContent;
+  const published = publications(h);
+  h.setExtract(async () => ({ ok: false, reason: "conversation-request-timeout" }));
+  await h.click();
+  assert.equal(h.nodes[".primary"].textContent, "내보내기 실패");
+  h.setExtract(async () => h.result);
+  await h.clickView();
+  assert.equal(h.nodes[".primary"].textContent, value);
+  assert.equal(h.nodes[".secondary"].textContent, capacity);
+  assert.equal(publications(h), published);
+  assert.equal(h.downloads.length, 0);
+  assert.equal(h.viewPorts.length, 1);
 });
 
 test("Export fetches once without a cached snapshot and saves fresh MD without publishing measurement", async () => {
@@ -226,12 +298,14 @@ test("pending View locks all document controls and keeps Export labels separate;
   await flushAsync();
   for (const selector of [".measure", ".expand", ".export"]) assert.equal(h.nodes[selector].disabled, true);
   assert.equal(h.nodes[".export"].textContent, h.context.Chatcouter.i18n.t("export_button"));
-  assert.equal(h.nodes[".expand"].textContent, h.context.Chatcouter.i18n.t("expand_preparing"));
+  assert.equal(h.nodes[".expand"].textContent, h.context.Chatcouter.i18n.t("expand_button"));
+  assert.equal(h.nodes[".primary"].textContent, h.context.Chatcouter.i18n.t("expand_preparing"));
   await h.clickView(); await h.click(); h.nodes[".measure"].listeners.click();
   assert.equal(h.requests(), 1);
   h.viewPorts[0].onMessage.emit({ ok: false, reason: "view-tab-create-failed" });
   await task;
-  assert.equal(h.nodes[".expand"].textContent, h.context.Chatcouter.i18n.t("expand_retry"));
+  assert.equal(h.nodes[".expand"].textContent, h.context.Chatcouter.i18n.t("expand_button"));
+  assert.equal(h.nodes[".primary"].textContent, h.context.Chatcouter.i18n.t("expand_failed_status"));
   assert.equal(h.nodes[".export"].disabled, false);
   assert.equal(h.unverified(), 0);
   h.setViewResult({ ok: true }); await h.clickView();
@@ -264,7 +338,8 @@ test("View rejects a snapshot behind the current user without opening a tab or p
   assert.equal(h.viewPorts.length, 0);
   assert.equal(h.downloads.length, 0);
   assert.equal(h.unverified(), 0);
-  assert.equal(h.nodes[".expand"].textContent, h.context.Chatcouter.i18n.t("expand_retry"));
+  assert.equal(h.nodes[".expand"].textContent, h.context.Chatcouter.i18n.t("expand_button"));
+  assert.equal(h.nodes[".primary"].textContent, h.context.Chatcouter.i18n.t("expand_failed_status"));
 });
 
 async function enterBaselineRecovery(h) {
@@ -293,6 +368,73 @@ async function enterBaselineRecovery(h) {
 }
 
 const flushAsync = () => new Promise(setImmediate);
+
+test("published capacity drives guide color, while independent document exports cannot change its tier", async () => {
+  const h = harness();
+  await flushAsync();
+  h.result.messages = [
+    { id: "u1", role: "user", text: "a".repeat(204801) },
+    { id: "a1", role: "assistant", text: "b" },
+  ];
+  h.nodes[".measure"].listeners.click();
+  await flushAsync();
+  assert.equal(h.nodes[".guide-canvas"].dataset.capacityStage, "1");
+  const count = h.requests();
+  h.result.messages[0].text = "a".repeat(409601);
+  await h.clickView();
+  assert.equal(h.requests(), count + 1);
+  assert.equal(h.nodes[".guide-canvas"].dataset.capacityStage, "1");
+  h.nodes[".measure"].listeners.click();
+  assert.equal(h.nodes[".guide-canvas"].dataset.capacityStage, "1");
+  await flushAsync();
+  assert.equal(h.requests(), count + 2);
+  assert.equal(h.nodes[".guide-canvas"].dataset.capacityStage, "2");
+  h.setExtract(async () => ({ ok: false, reason: "conversation-request-failed" }));
+  h.nodes[".measure"].listeners.click();
+  await flushAsync();
+  assert.equal(h.nodes[".guide-canvas"].dataset.capacityStage, "2");
+  h.context.location.pathname = "/c/another";
+  h.context.observe([]);
+  assert.equal(h.nodes[".guide-canvas"].dataset.capacityStage, "0");
+});
+
+test("live capacity preferences change the cached stage without starting or canceling a measurement", async () => {
+  const h = harness(undefined, { capacityRead: async () => ({ capacityBackgroundLimitsKB: { secondKB: 400, thirdKB: 800 } }) });
+  await flushAsync();
+  h.result.messages[0].text = "a".repeat(300000);
+  h.nodes[".measure"].listeners.click(); await flushAsync();
+  const requests = h.requests(), timers = h.timerCount();
+  const measure = h.nodes[".measure"];
+  assert.equal(h.nodes[".guide-canvas"].dataset.capacityStage, "0");
+  h.changeCapacity({ capacityBackgroundLimitsKB: { secondKB: 100, thirdKB: 400 } });
+  assert.equal(h.nodes[".guide-canvas"].dataset.capacityStage, "1");
+  h.changeCapacity({ capacityBackgroundEnabled: false });
+  assert.equal(h.nodes[".guide-canvas"].dataset.capacityStage, "0");
+  h.changeCapacity({ capacityBackgroundEnabled: true });
+  assert.equal(h.nodes[".guide-canvas"].dataset.capacityStage, "1");
+  h.changeCapacity({ capacityBackgroundLimitsKB: { secondKB: 100, thirdKB: 200 } });
+  assert.equal(h.nodes[".guide-canvas"].dataset.capacityStage, "2");
+  h.changeCapacity({ capacityBackgroundEnabled: false }, "sync");
+  assert.equal(h.nodes[".guide-canvas"].dataset.capacityStage, "2");
+  assert.equal(h.nodes[".measure"], measure);
+  assert.equal(h.requests(), requests);
+  assert.equal(h.timerCount(), timers);
+});
+
+test("capacity changes during its startup read preserve the newer toggle and the loaded custom limits", async () => {
+  let finish;
+  const h = harness(["md"], { capacityRead: () => new Promise(resolve => { finish = resolve; }) });
+  h.changeCapacity({ capacityBackgroundEnabled: false });
+  finish({ capacityBackgroundEnabled: true, capacityBackgroundLimitsKB: { secondKB: 100, thirdKB: 200 } });
+  await flushAsync();
+  h.result.messages[0].text = "a".repeat(300000);
+  h.nodes[".measure"].listeners.click(); await flushAsync();
+  assert.equal(h.nodes[".guide-canvas"].dataset.capacityStage, "0");
+  const count = h.requests();
+  h.changeCapacity({ capacityBackgroundEnabled: true });
+  assert.equal(h.nodes[".guide-canvas"].dataset.capacityStage, "2");
+  assert.equal(h.requests(), count);
+});
 
 test("after one failure, streaming and Stop activity cannot start recovery before the next user input", async () => {
   const h = harness();
@@ -778,7 +920,8 @@ test("Export reads the latest saved preferences per click and fails safely on st
   assert.equal(h.requests(), 3);
   assert.equal(h.downloads.length, 3);
   assert.equal(h.nodes[".export"].disabled, false);
-  assert.equal(h.nodes[".export"].textContent, "내보내기 재시도");
+  assert.equal(h.nodes[".export"].textContent, "내보내기");
+  assert.equal(h.nodes[".primary"].textContent, "내보내기 실패");
 });
 
 test("filename preferences apply to every single format and ZIP while preserving unverified notices and timestamps", async () => {
@@ -875,7 +1018,8 @@ test("Export failure never saves DOM fallback and permits a fresh retry", async 
   h.setExtract(async () => ({ ok: false, reason: "conversation-request-timeout" }));
   await h.click();
   assert.equal(h.downloads.length, 0);
-  assert.equal(h.nodes[".export"].textContent, "내보내기 재시도");
+  assert.equal(h.nodes[".export"].textContent, "내보내기");
+  assert.equal(h.nodes[".primary"].textContent, "내보내기 실패");
   assert.equal(h.nodes[".export"].disabled, false);
   h.setExtract(async () => h.result);
   await h.click();
@@ -953,8 +1097,9 @@ test("Export blocks duplicate clicks and rejects a route change during lookup", 
   const pending = h.click();
   await new Promise(setImmediate);
   assert.equal(h.nodes[".export"].disabled, true);
-  assert.equal(h.nodes[".export"].textContent, "파일 준비 중…");
-  assert.equal(h.nodes[".primary"].textContent, "사용량 미확인");
+  assert.equal(h.nodes[".export"].textContent, "내보내기");
+  assert.equal(h.nodes[".primary"].textContent, "파일 준비 중…");
+  assert.ok(h.nodes[".measure"].attributes["aria-label"].includes("사용량 미확인"));
   assert.equal(h.nodes[".secondary"].textContent, "");
   assert.equal(h.nodes[".measure"].disabled, true);
   assert.equal(h.nodes[".measure"].dataset.indicator, "busy");
@@ -976,8 +1121,9 @@ test("Export preparation cannot reuse usage from the previous conversation", asy
   h.setExtract(() => new Promise((done) => { resolve = done; }));
   const pending = h.click();
   await flushAsync();
-  assert.equal(h.nodes[".export"].textContent, "파일 준비 중…");
-  assert.equal(h.nodes[".primary"].textContent, "사용량 미확인");
+  assert.equal(h.nodes[".export"].textContent, "내보내기");
+  assert.equal(h.nodes[".primary"].textContent, "파일 준비 중…");
+  assert.ok(h.nodes[".measure"].attributes["aria-label"].includes("사용량 미확인"));
   assert.equal(h.nodes[".secondary"].textContent, "");
   assert.equal(h.nodes[".measure"].dataset.numeric, "false");
   resolve(h.result);
@@ -1080,10 +1226,11 @@ test("Export works during an existing response and resumes its automatic lifecyc
   h.setExtract(() => new Promise((done) => { resolve = done; }));
   const pending = h.click();
   await flushAsync();
-  assert.equal(h.nodes[".export"].textContent, "파일 준비 중…");
-  assert.equal(h.nodes[".primary"].textContent, before);
+  assert.equal(h.nodes[".export"].textContent, "내보내기");
+  assert.equal(h.nodes[".primary"].textContent, "파일 준비 중…");
+  assert.ok(h.nodes[".measure"].attributes["aria-label"].includes(before));
   assert.equal(h.nodes[".secondary"].textContent, beforeBytes);
-  assert.equal(h.nodes[".measure"].dataset.numeric, "true");
+  assert.equal(h.nodes[".measure"].dataset.numeric, "false");
   assert.equal(h.nodes[".measure"].disabled, true);
   const requests = h.requests();
   h.nodes[".measure"].listeners.click();
@@ -1607,8 +1754,6 @@ test("UI host restoration only redraws presentation and never republishes a chec
     await finishAdmission(h);
     h.nodes[".measure"].listeners.click();
     await flushAsync();
-    const title = h.nodes[".measure"].title;
-    const value = h.nodes[".primary"].textContent;
     const published = publications(h);
     let finish;
     if (exporting) {
@@ -1616,6 +1761,8 @@ test("UI host restoration only redraws presentation and never republishes a chec
       h.click();
       await flushAsync();
     }
+    const title = h.nodes[".measure"].title;
+    const value = h.nodes[".primary"].textContent;
     const requestCount = h.requests();
     const countEvents = events(h).filter(e => e.event === "unverified-response-streak").length;
     h.context.document.host = null;
@@ -2007,4 +2154,162 @@ test("shared MD/HTML display cleanup in a three-format Export preserves JSON, or
     assert.equal(h.unverified(), 0);
     assert.ok(entries.every(entry => entry.filename.includes('_unchecked')));
   }
+});
+
+test('late bundled sample paints current room without restarting measurement or entry time; rejection preserves legacy controls', async () => {
+ let release, clock=Date.UTC(2026,9,17,3,0,0);
+ const pending=new Promise(resolve=>release=resolve);
+ const h=harness(['md'],{themeRead:()=>pending,now:()=>clock});
+ await finishAdmission(h);
+ assert.equal(h.nodes['.guide-canvas'],undefined);
+ h.context.location.pathname='/c/two';h.windowHandlers.popstate();await flushAsync();
+ const calls=h.requests(),timers=h.timerCount(),primary=h.nodes['.primary'].textContent;
+ clock+=60000;
+ release(JSON.parse(fs.readFileSync(path.join(__dirname,'../src/themes/default-sample.json'),'utf8')));await flushAsync();
+ assert.equal(h.nodes['.controls'].dataset.layout,'sample');
+ assert.equal(h.nodes['.primary'].textContent,primary);
+ assert.equal(h.nodes['.entry-time'].textContent,new Date(clock-60000).toLocaleTimeString('ko',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}));
+ assert.equal(h.requests(),calls);assert.equal(h.timerCount(),timers);
+ const failed=harness(['md'],{themeRead:async()=>{throw Error('local sample missing')}});await finishAdmission(failed);
+ assert.equal(failed.nodes['.guide-canvas'],undefined);assert.equal(failed.nodes['.export'].disabled,false);
+ assert.ok(failed.logs.some(([,text])=>JSON.parse(text).event==='theme-sample-unavailable'));
+});
+
+async function entryTransitionHarness({ inputMode = false, enabled = true, userTheme = true, stages = 3,
+  bytes = 500000, capacityRead } = {}) {
+  const h = harness(["md"], { inputMode,
+    capacityRead: capacityRead || (async () => ({ capacityEntryTransition: enabled })) });
+  h.result.messages[1].text = "x".repeat(bytes);
+  const theme = JSON.parse(fs.readFileSync("src/themes/default-sample.json", "utf8"));
+  theme.conversation.background.sources = theme.conversation.background.sources.slice(0, stages);
+  const stored = { theme, png: fs.readFileSync("src/themes/default-sample.png").toString("base64") };
+  if (userTheme) h.changeAppearance({ userThemeEnabled: true, userTheme: stored });
+  await finishAdmission(h);
+  return { h, stored };
+}
+
+test("entry transition publishes actual usage immediately in both modes, ends after 1500ms and never repeats on manual refresh", async () => {
+  for (const inputMode of [false, true]) {
+    const { h } = await entryTransitionHarness({ inputMode });
+    const canvas = h.nodes[".guide-canvas"], requests = h.requests();
+    assert.equal(canvas.dataset.capacityStage, "2");
+    assert.equal(canvas.dataset.backgroundStage, "1");
+    assert.equal(h.nodes[".measure"].dataset.numeric, "true");
+    assert.equal(h.nodes[".secondary"].textContent, "488.3 KB");
+    const timer = h.peekDelay(1500);
+    h.changeAppearance({ showEntryTime: true }); await flushAsync();
+    assert.equal(h.peekDelay(1500), timer, "unrelated render does not restart the interval");
+    assert.equal(h.requests(), requests);
+    h.runDelay(1500);
+    assert.equal(canvas.dataset.backgroundStage, "2");
+    assert.equal(h.hasDelay(1500), false);
+    assert.equal(h.requests(), requests);
+    h.nodes[".measure"].listeners.click(); await flushAsync();
+    assert.equal(h.requests(), requests + 1);
+    assert.equal(h.nodes[".guide-canvas"].dataset.backgroundStage, "2");
+    assert.equal(h.hasDelay(1500), false);
+  }
+});
+
+test("entry transition stays off for default themes, OFF preference, missing stages and an initially lower tier", async () => {
+  for (const options of [{ enabled: false }, { userTheme: false }, { stages: 1 }, { stages: 2 }, { bytes: 100 }]) {
+    const { h } = await entryTransitionHarness(options);
+    assert.equal(h.hasDelay(1500), false);
+    assert.equal(h.nodes[".guide-canvas"].dataset.backgroundStage, options.bytes ? "0" : "2");
+    if (options.bytes) {
+      h.result.messages[1].text = "x".repeat(500000);
+      h.nodes[".measure"].listeners.click(); await flushAsync();
+      assert.equal(h.nodes[".guide-canvas"].dataset.backgroundStage, "2");
+      assert.equal(h.hasDelay(1500), false, "later threshold crossing does not count as entry");
+    }
+  }
+});
+
+test("entry transition cancels on setting changes and theme replacement without replaying or issuing lookups", async () => {
+  for (const change of ["entry-off", "background-off", "limits", "theme-off", "replace"]) {
+    const { h, stored } = await entryTransitionHarness();
+    const stale = h.peekDelay(1500), count = h.requests();
+    if (change === "entry-off") h.changeCapacity({ capacityEntryTransition: false });
+    if (change === "background-off") h.changeCapacity({ capacityBackgroundEnabled: false });
+    if (change === "limits") h.changeCapacity({ capacityBackgroundLimitsKB: { secondKB: 600, thirdKB: 800 } });
+    if (change === "theme-off") h.changeAppearance({ userThemeEnabled: false });
+    if (change === "replace") h.changeAppearance({ userTheme: stored });
+    await flushAsync();
+    assert.equal(h.hasDelay(1500), false, change);
+    stale();
+    assert.equal(h.nodes[".guide-canvas"].dataset.backgroundStage, ["background-off", "limits"].includes(change) ? "0" : "2");
+    assert.equal(h.requests(), count, change);
+    if (change === "entry-off") {
+      h.changeCapacity({ capacityEntryTransition: true });
+      assert.equal(h.hasDelay(1500), false, "turning it back on does not replay the current visit");
+    }
+  }
+});
+
+test("entry transition belongs to a visit and cannot start from a retained A snapshot during A-B-A navigation", async () => {
+  const { h } = await entryTransitionHarness();
+  const oldTimer = h.peekDelay(1500);
+  h.context.location.pathname = "/c/two"; h.context.observe([]);
+  assert.equal(h.nodes[".guide-canvas"].dataset.backgroundStage, "0");
+  assert.equal(h.hasDelay(1500), false);
+  h.context.location.pathname = "/c/one"; h.context.observe([]);
+  assert.equal(h.nodes[".primary"].textContent, "헤아리는 중…");
+  assert.equal(h.nodes[".guide-canvas"].dataset.backgroundStage, "2");
+  oldTimer();
+  assert.equal(h.hasDelay(1500), false);
+  await finishAdmission(h);
+  assert.equal(h.nodes[".guide-canvas"].dataset.backgroundStage, "1");
+  const visitTimer = h.peekDelay(1500);
+  oldTimer();
+  assert.equal(h.peekDelay(1500), visitTimer, "stale callback cannot alter the new visit");
+  assert.equal(h.nodes[".guide-canvas"].dataset.backgroundStage, "1");
+  h.runDelay(1500);
+  assert.equal(h.nodes[".guide-canvas"].dataset.backgroundStage, "2");
+});
+
+test("entry transition never blocks Export and its completion changes neither publication nor refresh counts", async () => {
+  const { h } = await entryTransitionHarness();
+  let finish;
+  h.setExtract(() => new Promise(resolve => { finish = resolve; }));
+  const published = publications(h), requests = h.requests();
+  const pending = h.click(); await flushAsync();
+  assert.equal(h.nodes[".primary"].textContent, "파일 준비 중…");
+  h.runDelay(1500);
+  assert.equal(h.nodes[".primary"].textContent, "파일 준비 중…");
+  assert.equal(h.nodes[".guide-canvas"].dataset.backgroundStage, "2");
+  assert.equal(publications(h), published);
+  assert.equal(h.requests(), requests + 1);
+  finish(h.result); await pending;
+  assert.equal(h.downloads.length, 1);
+  assert.equal(h.hasDelay(1500), false);
+});
+
+test("entry transition waits for the original asynchronous setting read and preserves a newer OFF notification", async () => {
+  for (const changeDuringRead of [false, true]) {
+    let resolve;
+    const { h } = await entryTransitionHarness({ capacityRead: () => new Promise(r => { resolve = r; }) });
+    assert.equal(h.hasDelay(1500), false);
+    assert.equal(h.nodes[".measure"].dataset.numeric, "true");
+    if (changeDuringRead) h.changeCapacity({ capacityEntryTransition: false });
+    resolve({ capacityEntryTransition: true }); await flushAsync();
+    assert.equal(h.hasDelay(1500), !changeDuringRead);
+    assert.equal(h.nodes[".guide-canvas"].dataset.backgroundStage, changeDuringRead ? "2" : "1");
+  }
+});
+
+test('theme and entry preference changes keep measurement requests and entry coordinates independent', async () => {
+ const h=harness(['md']);await finishAdmission(h);
+ const calls=h.requests(),timers=h.timerCount(),entry=h.nodes['.entry-time'],style=entry.attributes.style;
+ assert.equal(entry.hidden,true);
+ h.changeAppearance({showEntryTime:true});await flushAsync();
+ assert.equal(h.nodes['.entry-time'],entry);assert.equal(entry.hidden,false);assert.equal(entry.attributes.style,style);
+ const sample=JSON.parse(fs.readFileSync(path.join(__dirname,'../src/themes/default-sample.json'),'utf8'));
+ sample.conversation.components.entryTime=false;
+ const stored={theme:sample,png:fs.readFileSync(path.join(__dirname,'../src/themes/default-sample.png')).toString('base64')};
+ h.changeAppearance({userThemeEnabled:true,userTheme:stored});await flushAsync();
+ assert.equal(h.context.document.host.shadowRoot.querySelector('.entry-time'),null);
+ h.changeAppearance({userThemeEnabled:false});await flushAsync();
+ assert.equal(h.nodes['.entry-time'].hidden,false);
+ h.changeAppearance({showEntryTime:false});await flushAsync();assert.equal(h.nodes['.entry-time'].hidden,true);
+ assert.equal(h.requests(),calls);assert.equal(h.timerCount(),timers);
 });

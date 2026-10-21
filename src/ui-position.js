@@ -1,12 +1,16 @@
 (function registerUiPosition(global) {
   "use strict";
 
-  function besideComposer(rect, size, viewport, gap = 8) {
+  function besideComposer(rect, size, viewport, gap = 8, bottomOffset = 0, verticalAlign = "bottom", anchorHeight = size.height) {
     if (!rect || rect.width <= 0 || rect.height <= 0 || size.width <= 0 || size.height <= 0) return null;
     const left = rect.right + gap;
-    const top = rect.bottom - size.height;
+    // Decoration may extend above the viewport; only the bottom control box
+    // determines whether this placement is available.
+    const anchorTop = (verticalAlign === "center" ? rect.top + (rect.height - anchorHeight) / 2
+      : rect.bottom - anchorHeight) + bottomOffset;
+    const top = anchorTop + anchorHeight - size.height;
     if (rect.left < 0 || rect.top < 0 || rect.bottom > viewport.height
-      || top < gap || left >= viewport.width) return null;
+      || anchorTop < gap || left >= viewport.width) return null;
     return { left, top };
   }
 
@@ -39,7 +43,7 @@
     return bounds;
   }
 
-  function create({ host, getComposer, document, window }) {
+  function create({ host, getComposer, document, window, bottomOffset = 0, verticalAlign = "bottom", anchorHeight }) {
     let composer = null;
     let layoutElements = [];
     let pending = false;
@@ -72,7 +76,7 @@
         width: document.documentElement.clientWidth,
         height: document.documentElement.clientHeight,
       };
-      const position = besideComposer(composer?.getBoundingClientRect(), size, viewport);
+      const position = besideComposer(composer?.getBoundingClientRect(), size, viewport, 8, bottomOffset, verticalAlign, anchorHeight);
       let visible = false;
       if (position) {
         host.style.left = `${position.left}px`;
@@ -82,7 +86,9 @@
         const right = Math.max(0, position.left + size.width - bounds.right);
         const bottom = Math.max(0, position.top + size.height - bounds.bottom);
         const left = Math.max(0, bounds.left - position.left);
-        visible = left + right < size.width && top + bottom < size.height;
+        const anchorTop = position.top + size.height - (anchorHeight ?? size.height);
+        visible = left + right < size.width
+          && Math.max(bounds.top, anchorTop) < Math.min(bounds.bottom, position.top + size.height);
         host.style.clipPath = `inset(${top}px ${right}px ${bottom}px ${left}px)`;
       }
       host.style.visibility = visible ? "visible" : "hidden";

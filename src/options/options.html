@@ -9,38 +9,80 @@
 <body>
   <main>
     <h1>ChatGauge</h1>
-    <fieldset id="export-formats" disabled>
-      <legend data-i18n="export_formats">Export formats</legend>
+    <details class="help">
+      <summary id="formats-heading"><span data-i18n="export_formats">Export formats</span><span class="help-mark" aria-hidden="true">?</span><span class="visually-hidden" data-i18n="options_help">Help</span></summary>
+      <p class="hint" data-i18n="export_formats_hint">Use the Export button in the conversation to save the selected formats. Multiple formats are bundled into one ZIP file.</p>
+    </details>
+    <fieldset id="export-formats" aria-labelledby="formats-heading" disabled>
       <label><input type="checkbox" value="md"> Markdown <span>.md</span></label>
       <label><input type="checkbox" value="json"> JSON <span>.json</span></label>
       <label><input type="checkbox" value="html"> HTML <span>.html</span></label>
     </fieldset>
-    <p class="hint" data-i18n="export_formats_hint">Use the Export button in the conversation to save the selected formats. Multiple formats are bundled into one ZIP file.</p>
-    <fieldset id="filename-settings" disabled>
-      <legend data-i18n="filename_heading">Filename</legend>
+    <details class="help">
+      <summary id="filename-heading"><span data-i18n="filename_heading">Filename</span><span class="help-mark" aria-hidden="true">?</span><span class="visually-hidden" data-i18n="options_help">Help</span></summary>
+      <p class="hint" data-i18n="filename_hint">Applies to your next export. Dates and times use UTC. Turn all three off to use only the conversation title. Unverified completion notices inside exported files remain.</p>
+    </details>
+    <fieldset id="filename-settings" aria-labelledby="filename-heading" disabled>
       <label><input id="filename-date" type="checkbox"> <span data-i18n="include_date">Include date</span></label>
       <label><input id="filename-time" type="checkbox"> <span data-i18n="include_time">Include time</span></label>
       <label><input id="filename-unchecked" type="checkbox"> <span data-i18n="include_unchecked">Include _unchecked for unverified completion</span></label>
     </fieldset>
-    <p class="hint" data-i18n="filename_hint">Applies to your next export. Dates and times use UTC. Turn all three off to use only the conversation title. Unverified completion notices inside exported files remain.</p>
-    <fieldset id="refresh-settings" disabled>
-      <legend data-i18n="refresh_heading">Refresh behavior</legend>
+    <details class="help">
+      <summary id="refresh-heading"><span data-i18n="refresh_heading">Refresh behavior</span><span class="help-mark" aria-hidden="true">?</span><span class="visually-hidden" data-i18n="options_help">Help</span></summary>
+      <p class="hint" data-i18n="refresh_mode_hint">When enabled, your messages trigger a server-data refresh without waiting for the AI response to complete. The latest response may not be reflected until your next message. When disabled, refreshes follow response completion.</p>
+      <p class="hint" data-i18n="refresh_scope_hint">Applies to all conversations. Changes take effect with your next message; loading already in progress continues.</p>
+    </details>
+    <fieldset id="refresh-settings" aria-labelledby="refresh-heading" disabled>
       <label><input id="update-on-user-input" type="checkbox"> <span data-i18n="update_on_input">Refresh on user input</span></label>
     </fieldset>
-    <p class="hint" data-i18n="refresh_mode_hint">When enabled, your messages trigger a server-data refresh without waiting for the AI response to complete. The latest response may not be reflected until your next message. When disabled, refreshes follow response completion.</p>
-    <p class="hint" data-i18n="refresh_scope_hint">Applies to all conversations. Changes take effect with your next message; loading already in progress continues.</p>
-    <fieldset id="send-key-settings" disabled>
-      <legend id="send-key-label" data-i18n="send_key_heading">Additional send shortcut</legend>
+    <details class="help">
+      <summary id="send-key-label"><span data-i18n="send_key_heading">Additional send shortcut</span><span class="help-mark" aria-hidden="true">?</span><span class="visually-hidden" data-i18n="options_help">Help</span></summary>
+      <p id="send-key-hint" class="hint" data-i18n="send_key_hint">If you changed ChatGPT's send shortcut, click the field and press the same combination. One character key or Enter, with optional modifiers. This adds detection without changing ChatGPT's shortcut or the existing Enter detection. Applies to all conversations.</p>
+    </details>
+    <fieldset id="send-key-settings" aria-labelledby="send-key-label" disabled>
       <div class="key-setting">
         <input id="send-key" type="text" readonly aria-labelledby="send-key-label" aria-describedby="send-key-hint">
         <button id="send-key-clear" type="button" data-i18n="send_key_clear">Clear</button>
       </div>
     </fieldset>
-    <p id="send-key-hint" class="hint" data-i18n="send_key_hint">If you changed ChatGPT's send shortcut, click the field and press the same combination. One character key or Enter, with optional modifiers. This adds detection without changing ChatGPT's shortcut or the existing Enter detection. Applies to all conversations.</p>
+    <fieldset id="theme-settings">
+      <label><input id="entry-enabled" type="checkbox" disabled> <span data-i18n="entry_enabled">Show conversation entry time</span></label>
+      <label><input id="theme-enabled" type="checkbox" disabled> <span data-i18n="theme_enabled">Enable user theme</span></label>
+    </fieldset>
+    <section id="theme-controls" hidden>
+      <button id="theme-import" type="button" disabled data-i18n="theme_import">Import theme</button>
+      <input id="theme-file" type="file" accept=".zip,application/zip" hidden>
+      <p id="theme-file-status" class="hint"></p>
+    <details class="help">
+      <summary id="capacity-heading"><span data-i18n="capacity_heading">Background stages</span><span class="help-mark" aria-hidden="true">?</span><span class="visually-hidden" data-i18n="options_help">Help</span></summary>
+      <p id="capacity-hint" class="hint" data-i18n="capacity_hint">Applies to all conversations. Stages change above each limit (1 KB = 1024 bytes), using the last measurement without a new lookup. Off shows the first background and preserves your limits.</p>
+    </details>
+    <fieldset id="capacity-settings" aria-labelledby="capacity-heading" disabled>
+      <label><input id="capacity-enabled" type="checkbox"> <span data-i18n="capacity_enabled">Change background with conversation size</span></label>
+      <div id="capacity-limits">
+      <label class="capacity-limit"><span data-i18n="capacity_second">Stage 2 above</span><input id="capacity-second" type="number" min="1" step="1" aria-describedby="capacity-hint capacity-error"> KB</label>
+      <label class="capacity-limit"><span data-i18n="capacity_third">Stage 3 above</span><input id="capacity-third" type="number" min="1" step="1" aria-describedby="capacity-hint capacity-error"> KB</label>
+      <label id="capacity-entry-setting" hidden><input id="capacity-entry" type="checkbox" aria-describedby="capacity-entry-hint"> <span data-i18n="capacity_entry">Show stage 2 before stage 3 on entry</span></label>
+      <p id="capacity-entry-hint" class="hint" data-i18n="capacity_entry_hint">Once per conversation entry, show stage 2 for 1.5 seconds before stage 3. Measurement results appear immediately.</p>
+      </div>
+      <p class="hint" data-i18n="capacity_missing">Missing stage images use the first background.</p>
+      <p id="capacity-error" class="hint" role="alert" hidden data-i18n="capacity_invalid">Use positive whole numbers with the first limit below the second. The last saved limits remain active.</p>
+    </fieldset>
+    </section>
+    <section class="reset-settings">
+      <button id="reset-settings" type="button" disabled data-i18n="settings_reset">Reset all settings</button>
+      <p class="hint" data-i18n="settings_reset_hint">Restore defaults and remove the theme stored in this extension.</p>
+    </section>
     <p id="status" role="status" aria-live="polite" data-i18n="settings_loading">Loading settings…</p>
   </main>
   <script src="../i18n.js"></script>
   <script src="../export-settings.js"></script>
+  <script src="../exporters/zip.js"></script>
+  <script src="../theme-contract.js"></script>
+  <script src="../theme-package.js"></script>
+  <script src="../theme-settings.js"></script>
+  <script src="options-reset.js"></script>
   <script src="options.js"></script>
+  <script src="theme-options.js"></script>
 </body>
 </html>

@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="editor_title">ChatGauge theme editor</title>
+  <link rel="stylesheet" href="editor.css">
+</head>
+<body>
+  <header>
+    <div class="header-start"><div><span class="eyebrow">ChatGauge</span><h1 data-i18n="editor_title">Theme editor</h1></div>
+    </div>
+    <div class="header-actions">
+      <button id="actual-preview-toggle" aria-pressed="false" data-i18n="editor_actual_preview">Preview appearance</button>
+      <div id="edit-file-actions" class="file-actions">
+      <button id="open" disabled data-i18n="editor_open">Import theme</button>
+      <button id="save" class="primary" disabled data-i18n="editor_export">Save theme</button>
+      </div>
+      <div id="export-file-actions" class="file-actions" hidden>
+        <button id="save-file" class="primary" data-i18n="editor_save_file">Save file</button>
+      </div>
+    </div>
+  </header>
+  <main>
+    <section class="tools-panel" aria-label="Preview tools">
+      <div class="toolbar">
+        <label><span data-i18n="editor_screen">Screen</span><select id="mode"><option value="conversation" data-i18n="editor_conversation">Conversation</option><option value="idle" data-i18n="editor_home">Home</option></select></label>
+        <label><span data-i18n="editor_environment">Preview background</span><select id="scheme"><option value="light" data-i18n="editor_light">Light</option><option value="dark" data-i18n="editor_dark">Dark</option></select></label>
+        <label><span data-i18n="editor_zoom">Zoom</span><select id="zoom"><option value="0.25">25%</option><option value="0.5">50%</option><option value="0.75">75%</option><option value="1" selected>100%</option><option value="1.25">125%</option><option value="1.5">150%</option><option value="2">200%</option><option value="3">300%</option><option value="4">400%</option></select></label>
+        <button id="reset-view" data-i18n="editor_reset_view">Reset view</button>
+        <label><span data-i18n="editor_state">Indicator</span><select id="indicator"><option value="ready" data-i18n="editor_ready">Ready</option><option value="busy" data-i18n="editor_busy">Busy</option><option value="attention" data-i18n="editor_attention">Attention</option><option value="unavailable" data-i18n="editor_unavailable">Unavailable</option></select></label>
+        <label class="check"><input id="composer-preview" type="checkbox" checked><span data-i18n="editor_composer_preview">Chat input and help</span></label>
+        <fieldset class="guide-settings"><legend data-i18n="editor_guidelines">Guidelines</legend>
+        <label class="check"><input id="area-enabled" type="checkbox"><span data-i18n="editor_area_guide">Area guides</span></label>
+        <label class="check"><input id="grid-enabled" type="checkbox"><span data-i18n="editor_grid">Grid</span></label>
+        <label><span data-i18n="editor_grid_gap">Grid spacing (px)</span><input id="grid-gap" type="number" min="1" max="128" step="1" value="8"></label>
+        </fieldset>
+      </div>
+      <p class="hint" data-i18n="editor_navigation_hint">Ctrl + wheel: zoom · Space + drag: pan</p>
+      <button id="reset" class="secondary-action" disabled data-i18n="editor_reset">Reset to default</button>
+    </section>
+    <section class="workspace" aria-label="Preview">
+      <div id="preview-shell"><div id="guide-legend" hidden><span id="component-legend"></span><span id="background-legend" data-i18n="editor_background_legend">Maximum background 256 × 640 px</span></div>
+      <div id="viewport" data-scheme="light" tabindex="0">
+        <div id="preview-frame"><div id="preview"><div id="render-mount"></div><div id="grid" hidden></div>
+          <div id="composer-help" hidden>
+            <p class="help-question" data-i18n="editor_help_question">How do I customize my theme?</p>
+            <div class="help-answer"><p data-i18n="editor_help_select">Select a component on the right or click it in the preview.</p><p data-i18n="editor_help_adjust">Adjust its image, text, size and position.</p><p data-i18n="editor_help_preview">Check the stages in Preview appearance.</p><p data-i18n="editor_help_save">Choose Save theme, then Save file.</p></div>
+          </div>
+          <div id="composer" hidden><span data-i18n="editor_composer_text">Message</span><span class="send-arrow">↑</span></div><div id="background-guide" hidden></div><div id="component-guide" hidden></div><div id="overlay"></div></div></div>
+      </div>
+      </div>
+      <div id="actual-preview" hidden></div>
+      <p id="export-preview-note" class="hint" hidden data-i18n="editor_export_preview_hint">Review all stages and the home screen, then save the file.</p>
+      <div class="preview-footer"><span id="dimensions"></span><span data-i18n="editor_coordinate_hint">X/Y: bottom-left · drag or enter whole pixels</span></div>
+      <p id="overlap-warning" role="status" aria-live="polite" hidden data-i18n="editor_overlap_warning">Components overlap. Move or resize them before exporting.</p>
+      <p id="status" role="status" aria-live="polite" data-i18n="editor_loading">Loading theme…</p>
+      <nav id="output-files" hidden aria-label="Theme files"></nav>
+    </section>
+    <aside>
+      <label id="stage-control" class="field" hidden><span data-i18n="editor_stage">Stage</span><select id="stage"><option value="0">1</option></select></label>
+      <section id="details" aria-live="polite"></section>
+      <h2 data-i18n="editor_components">Components</h2>
+      <div id="components"></div>
+    </aside>
+  </main>
+  <input id="pair-files" type="file" accept=".zip,.png,.json,application/zip,image/png,application/json" multiple hidden>
+  <script id="editor-data" type="application/json">EDITOR_BUNDLE_DATA</script>
+  <script src="preview-environment.js"></script>
+  <script src="../../src/theme-contract.js"></script>
+  <script src="../../src/exporters/zip.js"></script>
+  <script src="../../src/theme-package.js"></script>
+  <script src="../../src/meter-ui.js"></script>
+  <script src="editor-model.js"></script>
+  <script src="editor-recovery.js"></script>
+  <script src="editor.js"></script>
+</body>
+</html>

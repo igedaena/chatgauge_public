@@ -1,10 +1,20 @@
 :root { color-scheme: light dark; font: 14px/1.6 system-ui, sans-serif; }
 body { margin: 0; min-width: 280px; background: Canvas; color: CanvasText; }
-main { padding: 20px; max-width: 420px; }
-h1 { margin: 0 0 16px; font-size: 18px; }
+main { padding: 14px; max-width: 420px; }
+h1 { margin: 0 0 10px; font-size: 18px; }
 fieldset { border: 0; padding: 0; margin: 0; }
-legend { font-weight: 600; margin-bottom: 8px; }
-label { display: flex; align-items: center; gap: 10px; padding: 8px 0; cursor: pointer; }
+.help { margin-top: 12px; margin-bottom: 4px; }
+.help summary { display: flex; align-items: center; gap: 8px; width: fit-content;
+  font-weight: 600; cursor: pointer; list-style: none; }
+.help summary::-webkit-details-marker { display: none; }
+.help-mark { display: inline-flex; justify-content: center; align-items: center;
+  width: 18px; height: 18px; border: 1px solid GrayText; border-radius: 50%;
+  color: GrayText; font-size: 12px; line-height: 1; }
+.help[open] .help-mark { color: CanvasText; }
+.help summary:focus-visible { outline: 2px solid #7c3aed; outline-offset: 3px; border-radius: 3px; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+label { display: flex; align-items: center; gap: 10px; padding: 4px 0; cursor: pointer; }
 label span:not([data-i18n]) { margin-left: auto; color: GrayText; font-size: 12px; }
 input { accent-color: #7c3aed; width: 16px; height: 16px; }
 .key-setting { display: flex; gap: 8px; }
@@ -14,5 +24,19 @@ input { accent-color: #7c3aed; width: 16px; height: 16px; }
 .key-setting button { flex-shrink: 0; font: inherit; padding: 4px 10px; cursor: pointer; }
 .key-setting :focus-visible { outline: 2px solid #7c3aed; outline-offset: 2px; }
 .key-setting :disabled { cursor: default; opacity: .65; }
-.hint { color: GrayText; font-size: 12px; margin-top: 16px; }
+.hint { color: GrayText; font-size: 12px; margin: 6px 0 8px; }
 #status { font-size: 12px; margin: 8px 0 0; min-height: 20px; }
+.capacity-limit input { width: 108px; height: 30px; box-sizing: border-box; margin-left: auto;
+  font: inherit; padding: 3px 6px; color: CanvasText; background: Canvas;
+  border: 1px solid GrayText; border-radius: 4px; }
+.capacity-limit input:focus-visible { outline: 2px solid #7c3aed; outline-offset: 2px; }
+.capacity-limit input:disabled { opacity: .65; }
+
+#theme-settings { margin-top: 16px; }
+#theme-controls { margin-top: 8px; padding-left: 12px; border-left: 2px solid GrayText; }
+#theme-import { font: inherit; padding: 6px 12px; cursor: pointer; }
+#theme-status { font-size: 12px; min-height: 16px; }
+[hidden] { display: none !important; }
+.reset-settings { margin-top: 20px; padding-top: 12px; border-top: 1px solid GrayText; }
+#reset-settings { font: inherit; padding: 6px 12px; cursor: pointer; }
+#reset-settings:disabled { cursor: default; opacity: .65; }

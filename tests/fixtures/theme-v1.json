@@ -1,0 +1,219 @@
+{
+  "version": "chatgauge-theme-1",
+  "atlas": {
+    "width": 864,
+    "height": 168,
+    "sha256": "b15e8caf26cee32de3e772ebecb121a3c7aa30259c7a2c62019753c8ce07d69b"
+  },
+  "conversation": {
+    "width": 256,
+    "height": 168,
+    "bottomOffset": 24,
+    "background": {
+      "width": 256,
+      "height": 168,
+      "sources": [
+        {
+          "x": 96,
+          "y": 0,
+          "width": 256,
+          "height": 168
+        },
+        {
+          "x": 352,
+          "y": 0,
+          "width": 256,
+          "height": 168
+        },
+        {
+          "x": 608,
+          "y": 0,
+          "width": 256,
+          "height": 168
+        }
+      ],
+      "color": "line"
+    },
+    "components": {
+      "symbol": {
+        "x": 5,
+        "y": 26,
+        "width": 30,
+        "height": 48,
+        "paint": [
+          {
+            "source": {
+              "x": 10,
+              "y": 10,
+              "width": 26,
+              "height": 44
+            },
+            "color": "line"
+          },
+          {
+            "source": {
+              "x": 58,
+              "y": 10,
+              "width": 26,
+              "height": 44
+            },
+            "color": "status"
+          }
+        ]
+      },
+      "measure": {
+        "x": 45,
+        "y": 55,
+        "width": 88,
+        "height": 20,
+        "text": {
+          "family": "system-ui",
+          "size": 12,
+          "weight": 400,
+          "color": "ink",
+          "numericSize": 14,
+          "numericWeight": 500
+        }
+      },
+      "secondary": {
+        "x": 45,
+        "y": 35,
+        "width": 88,
+        "height": 20,
+        "text": {
+          "family": "system-ui",
+          "size": 14,
+          "weight": 400,
+          "color": "muted"
+        }
+      },
+      "expand": {
+        "x": 142,
+        "y": 53,
+        "width": 52,
+        "height": 22,
+        "text": {
+          "family": "system-ui",
+          "size": 12,
+          "weight": 400,
+          "color": "muted"
+        }
+      },
+      "expandIcon": {
+        "x": 194,
+        "y": 53,
+        "width": 18,
+        "height": 22,
+        "paint": [
+          {
+            "source": {
+              "x": 0,
+              "y": 128,
+              "width": 14,
+              "height": 14
+            },
+            "color": "muted"
+          }
+        ]
+      },
+      "export": {
+        "x": 142,
+        "y": 29,
+        "width": 52,
+        "height": 24,
+        "text": {
+          "family": "system-ui",
+          "size": 12,
+          "weight": 400,
+          "color": "muted"
+        }
+      },
+      "exportIcon": {
+        "x": 194,
+        "y": 29,
+        "width": 18,
+        "height": 24,
+        "paint": [
+          {
+            "source": {
+              "x": 20,
+              "y": 128,
+              "width": 14,
+              "height": 14
+            },
+            "color": "muted"
+          }
+        ]
+      },
+      "entryTime": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 24,
+        "text": {
+          "family": "system-ui",
+          "size": 12,
+          "weight": 400,
+          "color": "muted"
+        }
+      }
+    }
+  },
+  "idle": {
+    "width": 168,
+    "height": 64,
+    "verticalAlign": "center",
+    "background": {
+      "width": 168,
+      "height": 64,
+      "sources": [
+        {
+          "x": 96,
+          "y": 0,
+          "width": 168,
+          "height": 64
+        }
+      ]
+    },
+    "components": {
+      "symbol": {
+        "x": 5,
+        "y": 10,
+        "width": 23,
+        "height": 38,
+        "paint": [
+          {
+            "source": {
+              "x": 10,
+              "y": 79,
+              "width": 19,
+              "height": 34
+            },
+            "color": "line"
+          },
+          {
+            "source": {
+              "x": 58,
+              "y": 79,
+              "width": 19,
+              "height": 34
+            },
+            "color": "status"
+          }
+        ]
+      },
+      "measure": {
+        "x": 44,
+        "y": 18,
+        "width": 124,
+        "height": 28,
+        "text": {
+          "family": "system-ui",
+          "size": 15,
+          "weight": 400,
+          "color": "ink"
+        }
+      }
+    }
+  }
+}

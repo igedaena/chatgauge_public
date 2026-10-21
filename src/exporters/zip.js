@@ -12,7 +12,7 @@
     return (crc ^ 0xffffffff) >>> 0;
   }
 
-  // Standard ZIP method 0 (stored): package text files without runtime dependencies.
+  // Standard ZIP method 0 (stored): package files without runtime dependencies.
   function createZip(files, exportedAt = new Date()) {
     if (!Array.isArray(files) || !files.length || files.length > 65535) throw new TypeError("Invalid ZIP entries");
     const date = new Date(exportedAt);
@@ -24,12 +24,13 @@
     let localSize = 0;
     let centralSize = 0;
     const entries = files.map(({ filename, contents }) => {
-      if (typeof contents !== "string") throw new TypeError("ZIP contents must be text");
+      if (typeof contents !== "string" && !(ArrayBuffer.isView(contents)
+        && Object.prototype.toString.call(contents) === "[object Uint8Array]")) throw new TypeError("ZIP contents must be text or bytes");
       if (typeof filename !== "string" || !filename || /[\/\\\u0000]/.test(filename)
         || filename === "." || filename === ".." || names.has(filename)) throw new TypeError("Unsafe ZIP filename");
       names.add(filename);
       const name = encoder.encode(filename);
-      const data = encoder.encode(contents);
+      const data = typeof contents === "string" ? encoder.encode(contents) : contents;
       if (name.length > 65535 || data.length >= 0xffffffff) throw new RangeError("ZIP64 required");
       const entry = { name, data, crc: crc32(data), offset: localSize };
       localSize += 30 + name.length + data.length;
@@ -78,5 +79,5 @@
     u32(offset + 16, localSize);
     return output;
   }
-  namespace.zipExporter = Object.freeze({ createZip });
+  namespace.zipExporter = Object.freeze({ createZip, crc32 });
 })(globalThis);

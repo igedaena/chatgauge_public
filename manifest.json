@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ChatGauge",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "description": "__MSG_extension_description__",
   "icons": {
     "16": "icons/chatgauge-16.png",
@@ -15,7 +15,9 @@
     "storage"
   ],
   "background": {
-    "scripts": ["src/view-background.js"]
+    "scripts": [
+      "src/view-background.js"
+    ]
   },
   "action": {
     "default_icon": {
@@ -72,10 +74,26 @@
         "src/exporters/fresh.js",
         "src/document-viewer.js",
         "src/ui-position.js",
+        "src/theme-contract.js",
+        "src/theme-package.js",
+        "src/theme-settings.js",
+        "src/theme-layout.js",
         "src/meter-ui.js",
         "src/content.js"
       ],
       "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "src/themes/default-sample.json",
+        "src/themes/default-sample.png"
+      ],
+      "matches": [
+        "https://chatgpt.com/*",
+        "https://chat.openai.com/*"
+      ]
     }
   ],
   "default_locale": "en"

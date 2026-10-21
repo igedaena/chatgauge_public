@@ -25,7 +25,7 @@ Requires Firefox 140 or later and a signed-in ChatGPT account.
 [Firefox 부가 기능 스토어](https://addons.mozilla.org/addon/chatgauge/)에서 설치할 수 있습니다.
 Firefox 140 이상과 ChatGPT 로그인이 필요합니다.
 
-The current source and AMO release are version 0.3.4. For direct downloads,
+This source prepares version 0.3.5. For published downloads,
 see [GitHub Releases](https://github.com/igedaena/chatgauge_public/releases).
 See [CHANGELOG.md](CHANGELOG.md) for changes between versions.
 
@@ -36,11 +36,33 @@ See [CHANGELOG.md](CHANGELOG.md) for changes between versions.
 - A read-only HTML view in a new tab; use the browser's Ctrl+F to search it.
 - Markdown, JSON and HTML export. Selecting multiple formats downloads a ZIP.
 - Local preferences for export formats, filenames and a custom send shortcut.
+- User themes imported from a theme ZIP, stored only in the local browser profile.
+- Optional conversation-size background stages and a brief stage-2 transition
+  when entering a conversation whose first measurement reaches stage 3.
+- A reset action that restores extension defaults and removes the stored user theme.
 - English and Korean UI, selected from the browser language.
 
 The meter appears next to the message composer. Click its count to refresh,
 **View / 펼쳐보기** to open the stored conversation, or **Export / 내보내기** to
 download it. Open the extension's toolbar icon to change preferences.
+
+## Themes / 테마
+
+Enable **User theme** in the extension options to import a theme ZIP. Switching
+it off shows the built-in theme and preserves the imported theme. Background
+stages and their size limits are separate options. Resetting all settings removes
+the theme stored in this extension; theme files saved on disk remain untouched.
+
+Create themes with the separate `chatgauge-theme-editor.html` from the release
+downloads. Open it locally in a browser, edit and save a theme ZIP, then import
+that ZIP in the extension. The editor is not bundled in the extension.
+See [the editor guide](tools/theme-editor/README.md) for building from source and
+the optional editor-only recovery ZIP.
+
+확장 옵션에서 사용자 테마를 켜고 에디터로 저장한 테마 ZIP을 불러오세요.
+사용자 테마를 끄면 불러온 테마는 보존하고 내장 기본 테마를 표시합니다.
+전체 기본값 초기화는 확장 안에 저장한 사용자 테마도 삭제하며, 디스크에 저장한
+테마 파일은 삭제하지 않습니다. 독립 에디터 HTML은 확장과 별도로 사용합니다.
 
 ## What the numbers mean
 
@@ -91,6 +113,7 @@ ChatGPT account or private conversation files are needed.
 ```sh
 node --test --test-isolation=none tests/*.test.cjs
 node scripts/validate-manifest.mjs
+node scripts/build-theme-editor.mjs
 ```
 
 The extension uses plain JavaScript, CSS and HTML. Marked 18.0.7 is bundled for
@@ -101,7 +124,7 @@ To prepare an AMO upload, install Mozilla's `web-ext` tool, then run:
 ```sh
 node scripts/prepare-amo-package.mjs
 web-ext lint --source-dir dist/amo/runtime
-web-ext build --source-dir dist/amo/runtime --artifacts-dir dist/amo --filename ChatGauge-0.3.4-amo.zip
+web-ext build --source-dir dist/amo/runtime --artifacts-dir dist/amo --filename ChatGauge-0.3.5-amo.zip
 ```
 
 The staging script copies an explicit runtime allowlist without transforming
@@ -113,7 +136,9 @@ src/                        Runtime, options, viewer and exporters
 _locales/                   English and Korean translations
 icons/                      Runtime icons
 tests/                      Synthetic regression tests
+tools/theme-editor/         Standalone editor source and guide (not in extension ZIP)
 scripts/validate-manifest.mjs
+scripts/build-theme-editor.mjs
 PRIVACY.md                  Data handling and permissions
 LICENSE                     GNU GPL version 3
 ```

@@ -1,6 +1,6 @@
 # ChatGauge data handling
 
-Last updated: 2026-10-14. This describes the source in version 0.3.4.
+Last updated: 2026-10-21. This describes the source in version 0.3.5.
 
 ## Conversation access
 
@@ -21,6 +21,10 @@ loaded in the page. This fallback may cover only part of the conversation.
 - Measurements and export preparation take place in the browser.
 - Export formats, filename options, refresh mode and the optional send shortcut
   are saved in `storage.local` in the Firefox profile. Browser sync is not used.
+- Imported theme JSON and PNG image data, theme enablement, entry-time display
+  and background-stage preferences are also saved in `storage.local`. Turning a
+  theme off keeps its saved data. Resetting all extension settings removes that
+  stored theme and restores the preference defaults.
 - Conversation text and authentication tokens are not written to extension
   preference storage.
 - **View** transfers a generated HTML document to an extension tab for display.
@@ -28,6 +32,10 @@ loaded in the page. This fallback may cover only part of the conversation.
 - **Export** saves the selected files through the browser. These files contain
   conversation content and metadata; their storage and sharing are controlled
   by the user.
+- The separate theme editor works locally with the files the user selects. It
+  does not read ChatGPT conversations or send images to an external service.
+  Its theme and optional recovery ZIPs are saved through the browser; those files
+  remain under the user's control and are not removed by the extension's reset.
 
 ## Network and diagnostics
 

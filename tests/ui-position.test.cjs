@@ -12,6 +12,65 @@ test("places the whole UI outside the composer with bottom edges aligned", () =>
   assert.deepEqual(besideComposer(rect, size, { width: 1400, height: 900 }), { left: 1008, top: 720 });
 });
 
+test("home can align its fixed box to the composer center with an optional one-pixel adjustment", () => {
+  const home = { width: 177, height: 64 };
+  assert.deepEqual(besideComposer(rect, home, { width: 1400, height: 900 }, 8, 0, "center"), { left: 1008, top: 718 });
+  assert.deepEqual(besideComposer(rect, home, { width: 1400, height: 900 }, 8, 1, "center"), { left: 1008, top: 719 });
+});
+
+test("guide bottom offset uses lower space and clips at the viewport", () => {
+  let frame;
+  const root = { clientWidth: 1400, clientHeight: 900 };
+  const composer = { getBoundingClientRect: () => ({ ...rect, bottom: 894 }) };
+  const host = { style: {}, getBoundingClientRect: () => ({ width: 250, height: 170 }) };
+  const window = {
+    getComputedStyle: () => ({ fontFamily: "Arial" }),
+    requestAnimationFrame: fn => { frame = fn; return 1; },
+    cancelAnimationFrame() {}, addEventListener() {}, removeEventListener() {},
+  };
+  const positioner = create({ host, getComposer: () => composer,
+    document: { documentElement: root }, window, bottomOffset: 12 });
+  frame();
+  assert.equal(host.style.top, "736px");
+  assert.equal(host.style.left, "1008px");
+  assert.equal(host.style.clipPath, "inset(0px 0px 6px 0px)");
+  assert.equal(host.style.visibility, "visible");
+  positioner.destroy();
+});
+
+test("tall decoration clips above the viewport without hiding controls, but cannot keep a fully clipped control box visible", () => {
+  let frame, paneBottom = 600;
+  const viewport = { width: 1400, height: 600 };
+  const input = { ...rect, top: 400, bottom: 550, height: 150 };
+  const tall = { width: 256, height: 640 };
+  assert.equal(besideComposer(input, tall, viewport, 8, 24), null);
+  assert.deepEqual(besideComposer(input, tall, viewport, 8, 24, "bottom", 168), { left: 1008, top: -66 });
+  const root = { clientWidth: viewport.width, clientHeight: viewport.height };
+  const pane = { parentElement: root, getBoundingClientRect: () => ({ left: 0, top: 0, width: 1400, height: paneBottom }) };
+  const composer = { parentElement: pane, getBoundingClientRect: () => input };
+  const host = { style: {}, getBoundingClientRect: () => tall };
+  const window = {
+    getComputedStyle: element => ({ fontFamily: "Arial", overflowX: "visible", overflowY: element === pane ? "hidden" : "visible" }),
+    requestAnimationFrame: fn => { frame = fn; return 1; },
+    cancelAnimationFrame() {}, addEventListener() {}, removeEventListener() {},
+  };
+  const positioner = create({ host, getComposer: () => composer, document: { documentElement: root }, window,
+    bottomOffset: 24, anchorHeight: 168 });
+  frame();
+  assert.equal(host.style.top, "-66px");
+  assert.equal(host.style.clipPath, "inset(66px 0px 0px 0px)");
+  assert.equal(host.style.visibility, "visible");
+  assert.equal(host.inert, false);
+  paneBottom = 400;
+  positioner.schedule(); frame();
+  assert.equal(host.style.visibility, "hidden");
+  assert.equal(host.inert, true);
+  paneBottom = 600;
+  positioner.schedule(); frame();
+  assert.equal(host.style.visibility, "visible");
+  positioner.destroy();
+});
+
 test("keeps partial width but hides when entirely outside, offscreen, absent or unmeasurable", () => {
   const viewport = { width: 1400, height: 900 };
   assert.equal(besideComposer(rect, size, { ...viewport, width: 1100 })?.left, 1008);

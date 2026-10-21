@@ -13,6 +13,12 @@
     includeUnchecked: "filenameIncludeUnchecked",
   });
   const SEND_SHORTCUT_KEY = "sendShortcut";
+  const CAPACITY_ENABLED_KEY = "capacityBackgroundEnabled";
+  const CAPACITY_LIMITS_KEY = "capacityBackgroundLimitsKB";
+  const CAPACITY_ENTRY_KEY = "capacityEntryTransition";
+  // One switch hides and disables the experiment, including previously saved ON values.
+  const CAPACITY_ENTRY_AVAILABLE = true;
+  const CAPACITY_DEFAULTS = Object.freeze({ enabled: true, secondKB: 200, thirdKB: 400 });
   const MODIFIERS = ["ctrlKey", "altKey", "shiftKey", "metaKey"];
 
   function normalizeFormats(value) {
@@ -122,7 +128,49 @@
     return shortcut;
   }
 
+  function validCapacityLimits(value) {
+    return Boolean(value && Number.isSafeInteger(value.secondKB) && value.secondKB > 0
+      && Number.isSafeInteger(value.thirdKB) && Number.isSafeInteger(value.thirdKB * 1024)
+      && value.secondKB < value.thirdKB);
+  }
+
+  function normalizeCapacityBackground(value) {
+    const limits = validCapacityLimits(value) ? value : CAPACITY_DEFAULTS;
+    return { enabled: typeof value?.enabled === "boolean" ? value.enabled : true,
+      secondKB: limits.secondKB, thirdKB: limits.thirdKB,
+      entryTransition: CAPACITY_ENTRY_AVAILABLE && value?.entryTransition === true };
+  }
+
+  async function getCapacityBackground() {
+    const stored = await global.browser.storage.local.get([CAPACITY_ENABLED_KEY, CAPACITY_LIMITS_KEY, CAPACITY_ENTRY_KEY]);
+    return normalizeCapacityBackground({ ...stored[CAPACITY_LIMITS_KEY], enabled: stored[CAPACITY_ENABLED_KEY],
+      entryTransition: stored[CAPACITY_ENTRY_KEY] });
+  }
+
+  async function setCapacityEntryTransition(value) {
+    if (typeof value !== "boolean") throw new TypeError("Entry transition toggle must be a boolean");
+    const enabled = CAPACITY_ENTRY_AVAILABLE && value;
+    await global.browser.storage.local.set({ [CAPACITY_ENTRY_KEY]: enabled });
+    return enabled;
+  }
+
+  async function setCapacityBackgroundEnabled(value) {
+    if (typeof value !== "boolean") throw new TypeError("Capacity background toggle must be a boolean");
+    await global.browser.storage.local.set({ [CAPACITY_ENABLED_KEY]: value });
+    return value;
+  }
+
+  async function setCapacityBackgroundLimits(value) {
+    if (!validCapacityLimits(value)) throw new TypeError("Capacity limits must be increasing positive integer KB");
+    const limits = { secondKB: value.secondKB, thirdKB: value.thirdKB };
+    await global.browser.storage.local.set({ [CAPACITY_LIMITS_KEY]: limits });
+    return limits;
+  }
+
   namespace.exportSettings = Object.freeze({
+    CAPACITY_ENABLED_KEY, CAPACITY_LIMITS_KEY, CAPACITY_ENTRY_KEY, CAPACITY_ENTRY_AVAILABLE,
+    setCapacityEntryTransition, CAPACITY_DEFAULTS, validCapacityLimits, normalizeCapacityBackground,
+    getCapacityBackground, setCapacityBackgroundEnabled, setCapacityBackgroundLimits,
     FORMATS, KEY, normalizeFormats, getFormats, setFormats,
     FILENAME_OPTIONS_KEY, FILENAME_OPTION_KEYS, normalizeFilenameOptions, getExportPreferences, setFilenameOptions, patchFilenameOptions,
     UPDATE_ON_INPUT_KEY, normalizeUpdateOnUserInput, getUpdateOnUserInput, setUpdateOnUserInput,

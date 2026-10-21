@@ -1,0 +1,527 @@
+{
+  "editor_title": {
+    "message": "테마 제작기",
+    "description": "Theme editor editor_title"
+  },
+  "editor_open": {
+    "message": "테마 불러오기"
+  },
+  "editor_reset": {
+    "message": "기본 테마로 초기화",
+    "description": "Theme editor editor_reset"
+  },
+  "editor_export": {
+    "message": "테마 저장하기"
+  },
+  "editor_screen": {
+    "message": "화면",
+    "description": "Theme editor editor_screen"
+  },
+  "editor_conversation": {
+    "message": "대화",
+    "description": "Theme editor editor_conversation"
+  },
+  "editor_home": {
+    "message": "홈",
+    "description": "Theme editor editor_home"
+  },
+  "editor_environment": {
+    "message": "미리보기 배경",
+    "description": "Theme editor editor_environment"
+  },
+  "editor_light": {
+    "message": "라이트",
+    "description": "Theme editor editor_light"
+  },
+  "editor_dark": {
+    "message": "다크",
+    "description": "Theme editor editor_dark"
+  },
+  "editor_zoom": {
+    "message": "확대",
+    "description": "Theme editor editor_zoom"
+  },
+  "editor_state": {
+    "message": "인디케이터 상태",
+    "description": "Theme editor editor_state"
+  },
+  "editor_ready": {
+    "message": "정상",
+    "description": "Theme editor editor_ready"
+  },
+  "editor_busy": {
+    "message": "작업 중 · 점멸",
+    "description": "Theme editor editor_busy"
+  },
+  "editor_attention": {
+    "message": "미확인",
+    "description": "Theme editor editor_attention"
+  },
+  "editor_unavailable": {
+    "message": "확인 불가",
+    "description": "Theme editor editor_unavailable"
+  },
+  "editor_stage": {
+    "message": "배경 단계",
+    "description": "Theme editor editor_stage"
+  },
+  "editor_coordinate_hint": {
+    "message": "X/Y: 좌하단 기준 · 정수 픽셀로 이동·조절",
+    "description": "Theme editor editor_coordinate_hint"
+  },
+  "editor_loading": {
+    "message": "기본 테마를 불러오는 중…",
+    "description": "Theme editor editor_loading"
+  },
+  "editor_components": {
+    "message": "요소",
+    "description": "Theme editor editor_components"
+  },
+  "editor_measure": {
+    "message": "문자 수·상태 메시지",
+    "description": "Theme editor editor_measure"
+  },
+  "editor_secondary": {
+    "message": "용량",
+    "description": "Theme editor editor_secondary"
+  },
+  "editor_symbol": {
+    "message": "인디케이터",
+    "description": "Theme editor editor_symbol"
+  },
+  "editor_expand": {
+    "message": "펼쳐보기 문구",
+    "description": "Theme editor editor_expand"
+  },
+  "editor_expandIcon": {
+    "message": "펼쳐보기 아이콘",
+    "description": "Theme editor editor_expandIcon"
+  },
+  "editor_exportIcon": {
+    "message": "내보내기 아이콘",
+    "description": "Theme editor editor_exportIcon"
+  },
+  "editor_entryTime": {
+    "message": "입장 시각",
+    "description": "Theme editor editor_entryTime"
+  },
+  "editor_name": {
+    "message": "이름",
+    "description": "Theme editor editor_name"
+  },
+  "editor_background": {
+    "message": "배경",
+    "description": "Theme editor editor_background"
+  },
+  "editor_x": {
+    "message": "X",
+    "description": "Theme editor editor_x"
+  },
+  "editor_y": {
+    "message": "Y",
+    "description": "Theme editor editor_y"
+  },
+  "editor_width": {
+    "message": "너비",
+    "description": "Theme editor editor_width"
+  },
+  "editor_height": {
+    "message": "높이",
+    "description": "Theme editor editor_height"
+  },
+  "editor_family": {
+    "message": "글꼴 이름",
+    "description": "Theme editor editor_family"
+  },
+  "editor_size": {
+    "message": "글자 크기",
+    "description": "Theme editor editor_size"
+  },
+  "editor_weight": {
+    "message": "굵기",
+    "description": "Theme editor editor_weight"
+  },
+  "editor_align": {
+    "message": "정렬",
+    "description": "Theme editor editor_align"
+  },
+  "editor_left": {
+    "message": "왼쪽",
+    "description": "Theme editor editor_left"
+  },
+  "editor_center": {
+    "message": "가운데",
+    "description": "Theme editor editor_center"
+  },
+  "editor_right": {
+    "message": "오른쪽",
+    "description": "Theme editor editor_right"
+  },
+  "editor_color": {
+    "message": "색상",
+    "description": "Theme editor editor_color"
+  },
+  "editor_stages_enabled": {
+    "message": "단계별 배경 사용",
+    "description": "Theme editor editor_stages_enabled"
+  },
+  "editor_load_stage1": {
+    "message": "1단계 · 기본 PNG 불러오기",
+    "description": "Theme editor editor_load_stage1"
+  },
+  "editor_load_stage2": {
+    "message": "2단계 PNG 불러오기",
+    "description": "Theme editor editor_load_stage2"
+  },
+  "editor_load_stage3": {
+    "message": "3단계 PNG 불러오기",
+    "description": "Theme editor editor_load_stage3"
+  },
+  "editor_load_image": {
+    "message": "이미지 불러오기 · PNG",
+    "description": "Theme editor editor_load_image"
+  },
+  "editor_load_body": {
+    "message": "몸체 이미지 불러오기 · PNG",
+    "description": "Theme editor editor_load_body"
+  },
+  "editor_load_status": {
+    "message": "인디케이터 PNG 불러오기",
+    "description": "Theme editor editor_load_status"
+  },
+  "editor_color_hint": {
+    "message": "ink · muted · line 또는 #RRGGBB / #RRGGBBAA",
+    "description": "Theme editor editor_color_hint"
+  },
+  "editor_paint_color_hint": {
+    "message": "original: 원래 그림색 · ink / muted / line: 자동 색상 · #RRGGBB: 고정 색",
+    "description": "Theme editor editor_paint_color_hint"
+  },
+  "editor_font_hint": {
+    "message": "설치된 글꼴 이름을 입력하세요. 없는 글꼴은 대체됩니다. 가로로 넘치는 문자 수·상태 메시지는 자동으로 흐릅니다.",
+    "description": "Theme editor editor_font_hint"
+  },
+  "editor_indicator_hint": {
+    "message": "동그라미·네모·세모 또는 커스텀 PNG를 선택하세요. 모양에 기존 상태색과 점멸을 자동 적용합니다.",
+    "description": "Theme editor editor_indicator_hint"
+  },
+  "editor_image_hint": {
+    "message": "정적 PNG · 최대 2 MiB, 각 축 2048px. 원본 이미지와 단색 채우기를 전환해도 원본 그림은 보존됩니다.",
+    "description": "Theme editor editor_image_hint"
+  },
+  "editor_background_hint": {
+    "message": "이미지 X/Y는 출력 영역 좌상단 기준입니다. 프레임 밖은 잘리고 덜 채운 곳은 투명하게 출력됩니다. 원본과 이동·확대 이력은 ZIP에 포함되지 않습니다."
+  },
+  "editor_off_hint": {
+    "message": "꺼진 요소입니다. ON하면 보존된 설정으로 편집할 수 있습니다."
+  },
+  "editor_layout_error": {
+    "message": "요소는 최소 8×8px이며 배치 영역 안에 있어야 합니다. 겹친 상태에서는 내보낼 수 없습니다.",
+    "description": "Theme editor editor_layout_error"
+  },
+  "editor_font_error": {
+    "message": "글꼴 이름·크기·색상 값을 확인하세요. 글자 크기는 정수 8~32px입니다.",
+    "description": "Theme editor editor_font_error"
+  },
+  "editor_integer": {
+    "message": "정수로 입력해 주세요.",
+    "description": "Theme editor editor_integer"
+  },
+  "editor_required": {
+    "message": "대화 화면의 사용량은 필수입니다.",
+    "description": "Theme editor editor_required"
+  },
+  "editor_atlas_error": {
+    "message": "그림을 PNG 한 장에 담기 어렵습니다. 입력 이미지 크기를 줄여 주세요.",
+    "description": "Theme editor editor_atlas_error"
+  },
+  "editor_pair_error": {
+    "message": "PNG와 JSON이 서로 다른 테마입니다. 올바른 파일 쌍을 선택하세요.",
+    "description": "Theme editor editor_pair_error"
+  },
+  "editor_pair_hint": {
+    "message": "테마 ZIP 또는 짝이 맞는 PNG와 JSON을 선택해 주세요."
+  },
+  "editor_png_hint": {
+    "message": "정적 PNG 파일인지 확인하세요. 최대 2 MiB, 각 축 2048px입니다.",
+    "description": "Theme editor editor_png_hint"
+  },
+  "editor_json_hint": {
+    "message": "JSON 파일은 최대 64 KiB입니다.",
+    "description": "Theme editor editor_json_hint"
+  },
+  "editor_file_error": {
+    "message": "테마 또는 이미지를 처리하지 못했습니다. 기존 편집 내용은 유지합니다.",
+    "description": "Theme editor editor_file_error"
+  },
+  "editor_changed": {
+    "message": "편집 내용을 반영했습니다. 내보내기로 파일을 저장할 수 있습니다.",
+    "description": "Theme editor editor_changed"
+  },
+  "editor_reset_done": {
+    "message": "제작기의 편집 내용을 기본 테마로 되돌렸습니다.",
+    "description": "Theme editor editor_reset_done"
+  },
+  "editor_open_done": {
+    "message": "테마를 열었습니다. 파일에 없는 OFF 항목은 기본 설정으로 준비됩니다.",
+    "description": "Theme editor editor_open_done"
+  },
+  "editor_export_done": {
+    "message": "다운로드를 시작했습니다. 저장 위치는 브라우저 설정을 따릅니다."
+  },
+  "editor_initial_hint": {
+    "message": "미리보기 또는 목록에서 요소를 선택하세요. 문자 수·상태 메시지는 미리보기에서 선택합니다."
+  },
+  "editor_export_label": {
+    "message": "내보내기 문구",
+    "description": "Theme editor component label"
+  },
+  "editor_pick_color": {
+    "message": "색상 선택",
+    "description": "Theme editor color picker"
+  },
+  "editor_message_preview": {
+    "message": "상태 메시지 미리보기",
+    "description": "Theme editor editor_message_preview"
+  },
+  "editor_composer_preview": {
+    "message": "채팅 입력창 및 도움말",
+    "description": "Theme editor editor_composer_preview"
+  },
+  "editor_grid": {
+    "message": "격자 표시"
+  },
+  "editor_grid_gap": {
+    "message": "격자 간격 (px)",
+    "description": "Theme editor editor_grid_gap"
+  },
+  "editor_reset_view": {
+    "message": "시점 초기화",
+    "description": "Theme editor editor_reset_view"
+  },
+  "editor_navigation_hint": {
+    "message": "Ctrl + 휠: 마우스 위치에서 확대·축소 · Space + 드래그: 패닝 · 빈 곳 클릭: 선택 해제",
+    "description": "Theme editor editor_navigation_hint"
+  },
+  "editor_composer_text": {
+    "message": "메시지 입력",
+    "description": "Theme editor editor_composer_text"
+  },
+  "editor_component_area": {
+    "message": "배치 영역",
+    "description": "Theme editor editor_component_area"
+  },
+  "editor_maximum": {
+    "message": "배경 최대",
+    "description": "Theme editor editor_maximum"
+  },
+  "editor_select_hint": {
+    "message": "미리보기 또는 아래 목록에서 편집할 요소를 선택하세요.",
+    "description": "Theme editor editor_select_hint"
+  },
+  "editor_ink_color": {
+    "message": "기본 글자색",
+    "description": "Theme editor editor_ink_color"
+  },
+  "editor_muted_color": {
+    "message": "보조 글자색",
+    "description": "Theme editor editor_muted_color"
+  },
+  "editor_line_color": {
+    "message": "선 색상",
+    "description": "Theme editor editor_line_color"
+  },
+  "editor_original_color": {
+    "message": "원래 그림색",
+    "description": "Theme editor editor_original_color"
+  },
+  "editor_custom_color": {
+    "message": "직접 지정",
+    "description": "Theme editor editor_custom_color"
+  },
+  "editor_color_code": {
+    "message": "색상 코드",
+    "description": "Theme editor editor_color_code"
+  },
+  "editor_adaptive_color_hint": {
+    "message": "기본·보조·선 색상은 라이트/다크 환경에 따라 바뀝니다. 직접 지정한 색은 고정됩니다.",
+    "description": "Theme editor editor_adaptive_color_hint"
+  },
+  "editor_windows_fonts": {
+    "message": "Windows 설치 글꼴 보기",
+    "description": "Theme editor editor_windows_fonts"
+  },
+  "editor_windows_fonts_hint": {
+    "message": "Windows 글꼴 설정을 엽니다. 열리지 않으면 Win+R에서 ms-settings:fonts를 입력하세요.",
+    "description": "Theme editor editor_windows_fonts_hint"
+  },
+  "editor_grid_error": {
+    "message": "격자 간격은 1~128px 정수로 입력하세요.",
+    "description": "Theme editor editor_grid_error"
+  },
+  "editor_icon": {
+    "message": "아이콘"
+  },
+  "editor_guidelines": {
+    "message": "가이드라인 표시"
+  },
+  "editor_area_guide": {
+    "message": "배치 영역 표시"
+  },
+  "editor_background_legend": {
+    "message": "배경 최대 영역 256 × 640 px"
+  },
+  "editor_discard": {
+    "message": "저장하지 않은 변경사항을 버리고 진행할까요?"
+  },
+  "editor_zip_error": {
+    "message": "제작기에서 내보낸 ZIP을 선택해 주세요. 현재 작업은 유지됩니다."
+  },
+  "editor_overlap_warning": {
+    "message": "요소가 겹쳤습니다. 위치나 크기를 조정해 주세요. 겹친 상태에서는 내보낼 수 없습니다."
+  },
+  "editor_actual_preview": {
+    "message": "실제 표시 미리보기"
+  },
+  "editor_return_edit": {
+    "message": "편집으로 돌아가기"
+  },
+  "editor_text": {
+    "message": "문구"
+  },
+  "editor_restore_family": {
+    "message": "글꼴 이름 기본값 복원"
+  },
+  "editor_semantic_color_hint": {
+    "message": "기존 자동 색상은 색상 값을 바꾸기 전까지 유지됩니다."
+  },
+  "editor_frame_hint": {
+    "message": "출력 영역은 256 × 640px로 고정됩니다. 이미지 위치는 좌상단 기준이며 영역 밖은 잘립니다."
+  },
+  "editor_source_image": {
+    "message": "원본 이미지"
+  },
+  "editor_solid_fill": {
+    "message": "단색 채우기"
+  },
+  "editor_keep_ratio": {
+    "message": "비율 유지"
+  },
+  "editor_shape": {
+    "message": "모양"
+  },
+  "editor_custom": {
+    "message": "사용자 지정"
+  },
+  "editor_circle": {
+    "message": "동그라미"
+  },
+  "editor_square": {
+    "message": "네모"
+  },
+  "editor_triangle": {
+    "message": "세모"
+  },
+  "editor_image_mode": {
+    "message": "그림 표시"
+  },
+  "editor_image_x": {
+    "message": "이미지 X"
+  },
+  "editor_image_y": {
+    "message": "이미지 Y"
+  },
+  "editor_image_width": {
+    "message": "이미지 너비"
+  },
+  "editor_image_height": {
+    "message": "이미지 높이"
+  },
+  "editor_stage_fallback": {
+    "message": "1단계 배경 사용"
+  },
+  "editor_remove_stage": {
+    "message": "이 단계 이미지 제거"
+  },
+  "editor_image_bounds": {
+    "message": "이미지 위치는 -16384~16384px, 너비·높이는 1~16384px 정수로 입력하세요."
+  },
+  "editor_source_size": {
+    "message": "각 축 2048px 이하, 20MiB 이하의 정적 PNG를 선택하세요. 최종 테마 PNG는 2MiB 이하여야 합니다."
+  },
+  "editor_stage_visible": {
+    "message": "이 단계 표시"
+  },
+  "editor_align_contain": {
+    "message": "전체 보기"
+  },
+  "editor_align_cover": {
+    "message": "채워 맞춤"
+  },
+  "editor_align_bottom": {
+    "message": "아래 맞춤"
+  },
+  "editor_remove_short": {
+    "message": "이미지 제거"
+  },
+  "editor_background_help": {
+    "message": "배경 도움말"
+  },
+  "editor_background_handles": {
+    "message": "이미지 또는 조절점을 끌어 조절합니다. 틀 밖 조절점은 틀 가장자리에 표시하며 6 화면 픽셀 안에서 경계에 맞춥니다."
+  },
+  "editor_text_help": {
+    "message": "글자 도움말"
+  },
+  "editor_placement_background_help": {
+    "message": "배치 영역 배경 도움말"
+  },
+  "editor_transparent_icon_hint": {
+    "message": "이미지를 제거해도 영역은 투명하게 남습니다. 문구 요소를 끄면 아이콘 영역을 액션 버튼으로 사용합니다."
+  },
+  "editor_save_file": {
+    "message": "파일 저장"
+  },
+  "editor_export_preview_hint": {
+    "message": "배경 각 단계와 홈을 확인하세요. ‘파일 저장’을 누르면 ZIP을 다운로드하고, ‘편집으로 돌아가기’로 수정할 수 있습니다."
+  },
+  "editor_placementBackground": {
+    "message": "배치 영역 배경"
+  },
+  "editor_placement_background_hint": {
+    "message": "대화의 모든 단계에서 큰 배경 위·요소 아래에 표시합니다. X/Y는 256 × 168px 배치 영역의 좌상단 기준이며 영역 밖은 잘립니다. 큰 배경과 별도로 켜고 끌 수 있습니다. 기본 장식의 원본은 밝음/어두움에 맞는 선 색을 유지하고, 단색 채우기는 지정색을 사용합니다. 새 PNG는 원래 색을 사용합니다. 기본 장식만 내보내면 자동색을 유지하며 큰 그림과 합치면 현재 미리보기 색으로 고정합니다. 일반 테마 ZIP은 합쳐진 그림을 저장합니다. 두 배경이 함께 있을 때 추가 저장하는 복원용 ZIP으로는 잘린 영역 안의 두 배경을 따로 불러올 수 있습니다."
+  },
+  "editor_stages": {
+    "message": "단계별 배경 사용"
+  },
+  "editor_help_question": {
+    "message": "테마는 어떻게 꾸미나요?"
+  },
+  "editor_help_select": {
+    "message": "오른쪽 목록이나 미리보기에서 요소를 선택하세요."
+  },
+  "editor_help_adjust": {
+    "message": "그림과 글자, 크기와 위치를 조절하세요."
+  },
+  "editor_help_preview": {
+    "message": "‘실제 표시 미리보기’로 단계별 모습을 확인하세요."
+  },
+  "editor_recovery_confirm": {
+    "message": "복원용 테마도 저장하시겠습니까?\n복원용 파일은 테마 제작기에서 두 배경을 다시 분리해 편집할 때 사용합니다. 확장에는 일반 테마 파일을 적용하세요."
+  },
+  "editor_recovery_saved": {
+    "message": "일반 테마와 복원용 테마의 파일 저장을 요청했습니다."
+  },
+  "editor_recovery_open_done": {
+    "message": "복원용 테마를 열었습니다. 배경과 배치 영역 배경을 따로 편집할 수 있습니다."
+  },
+  "editor_recovery_file_error": {
+    "message": "복원용 테마를 읽을 수 없습니다. 파일이 올바른지 확인하세요."
+  },
+  "editor_recovery_failed": {
+    "message": "복원용 파일을 만들지 못했습니다. 일반 테마의 저장 요청은 완료했습니다."
+  },
+  "editor_help_save": {
+    "message": "‘테마 저장하기’를 누른 뒤 ‘파일 저장’으로 보관하세요."
+  }
+}
