@@ -1,7 +1,7 @@
 (async function startEditor(global) {
   "use strict";
   const ns = global.Chatcouter, { t, localizeDocument } = ns.i18n;
-  const contract = ns.themeContract, model = ns.themeEditorModel;
+  const contract = ns.themeContract, model = ns.themeEditorModel, images = ns.themeEditorImage;
   const controls = new Map();
   const $ = id => controls.get(id) || document.getElementById(id);
   for (const id of ["stage", "stage-control"]) controls.set(id, $(id));
@@ -13,7 +13,8 @@
   let savedViewport, viewportSize = "";
   const colorModes = new Map();
   const zoomSteps = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4];
-  let scene;
+  let scene, workspace;
+  let workspaceInsets = { left: 0, top: 0 };
   let backgroundFrame = 0, backgroundPointer;
   localizeDocument(document);
   // Preview owns its position; all component painting/text/state still uses the real meter renderer.
@@ -170,7 +171,7 @@
       const match = item.key.match(/^(conversation|idle)\.background\.(\d+)$/);
       const asset = match ? backgroundImage(input, inputAssets, match[1], Number(match[2]), true) : inputAssets.get(item.key);
       if (!asset) throw new Error("editor-component-missing");
-      ctx.drawImage(asset, item.x, item.y, item.width, item.height);
+      images.draw(ctx, asset, item.x, item.y, item.width, item.height);
       refs.get(item.key)({ x: item.x, y: item.y, width: item.width, height: item.height });
     }
     for (const mode of modes) refs.get(`${mode}.finish`)?.();
@@ -211,7 +212,7 @@
     if (index !== stage && input.stageEnabled[mode][index] === false) return node;
     const image = inputAssets.get(`${mode}.background.${index}`);
     const placement = input.placements[mode][index];
-    if (image && placement) node.getContext("2d").drawImage(image, placement.x, placement.y, placement.width, placement.height);
+    if (image && placement) images.draw(ctx, image, placement.x, placement.y, placement.width, placement.height);
     return node;
   }
   function hasPlacementBackground(input, inputAssets) {
@@ -250,7 +251,7 @@
     }
     const box = input.placementBackground;
     ctx.save(); ctx.beginPath(); ctx.rect(0, node.height - 168, 256, 168); ctx.clip();
-    ctx.drawImage(placementBackgroundImage(input, inputAssets, Boolean(backgroundColor(input, inputAssets, mode))),
+    images.draw(ctx, placementBackgroundImage(input, inputAssets, Boolean(backgroundColor(input, inputAssets, mode))),
       box.x, node.height - 168 + box.y, box.width, box.height);
     ctx.restore(); return node;
   }
@@ -269,14 +270,13 @@
     const image = document.getElementById("chatcouter-root").shadowRoot.querySelector(".image-edit-preview canvas");
     if (!frame || !target || !image) return;
     const { placement, frame: background } = target;
+    const dragging = gesture?.kind === "background";
+    image.style.visibility = dragging ? "visible" : "hidden";
+    image.parentElement.querySelector(".image-edit-final").style.visibility = dragging ? "hidden" : "visible";
     image.style.transform = `translate(${placement.x}px,${placement.y}px) scale(${placement.width / image.width},${placement.height / image.height})`;
     frame.querySelector(".background-outline").style.cssText = `left:${placement.x}px;top:${placement.y}px;width:${placement.width}px;height:${placement.height}px`;
-    for (const handle of frame.querySelectorAll(".handle")) {
-      const edge = handle.dataset.edge;
-      const x = edge.includes("w") ? placement.x : edge.includes("e") ? placement.x + placement.width : placement.x + placement.width / 2;
-      const y = edge.includes("n") ? placement.y : edge.includes("s") ? placement.y + placement.height : placement.y + placement.height / 2;
-      handle.style.cssText = `left:${Math.max(0, Math.min(background.width, x))}px;top:${Math.max(0, Math.min(background.height, y))}px`;
-    }
+    updateHandles(frame, placement);
+    updateWorkspaceSpace();
     frame.dataset.snapped = String(Boolean(gesture) && (placement.x === 0 || placement.y === 0
       || placement.x + placement.width === background.width || placement.y + placement.height === background.height));
   }
@@ -295,9 +295,16 @@
     const color = editingLayer ? undefined : state.backgroundColors[mode];
     if (color) { ctx.globalCompositeOperation = "source-in"; ctx.fillStyle = color.startsWith("#") ? color : resolvedColor(color); ctx.fillRect(0, 0, image.width, image.height); }
     clip.append(image);
+    // Final editing appearance uses exactly the same bounded resampling as export.
+    // During a gesture only the reusable original's CSS transform changes.
+    const finalImage = canvas(target.frame.width, target.frame.height), finalContext = finalImage.getContext("2d");
+    finalImage.className = "image-edit-final";
+    finalImage.style.cssText = "position:absolute;left:0;top:0;pointer-events:none";
+    images.draw(finalContext, image, target.placement.x, target.placement.y, target.placement.width, target.placement.height);
+    clip.append(finalImage);
     if (!editingLayer && hasPlacementBackground(state, assets)) {
       const layer = canvas(256, 168), box = state.placementBackground;
-      layer.getContext("2d").drawImage(placementBackgroundImage(state, assets), box.x, box.y, box.width, box.height);
+      images.draw(layer.getContext("2d"), placementBackgroundImage(state, assets), box.x, box.y, box.width, box.height);
       layer.style.cssText = "position:absolute;left:0;bottom:0;pointer-events:none"; clip.append(layer);
     }
     // Keep the editable image below the real components; the outer editor owns only handles/outline.
@@ -334,6 +341,31 @@
       }
     }
   }
+  function updateHandles(node, box) {
+    const layout = model.controlLayout(box, Number($("zoom").value));
+    for (const handle of node.querySelectorAll(".handle")) {
+      const point = layout.handles.find(point => point.edge === handle.dataset.edge);
+      handle.hidden = !point;
+      if (point) handle.style.cssText = `left:${point.x}px;top:${point.y}px`;
+    }
+  }
+  function updateWorkspaceSpace() {
+    if (!workspace) return;
+    const target = backgroundEditTarget(), { zoom, left, top, width, height } = workspace;
+    const box = target?.placement, y = target ? scene.height - target.frame.height : 0;
+    const extra = box ? {
+      left: Math.max(0, -(528 + box.x) * zoom + 12),
+      top: Math.max(0, -(y + box.y) * zoom + 12),
+      right: Math.max(0, (528 + box.x + box.width - scene.width) * zoom + 12),
+      bottom: Math.max(0, (y + box.y + box.height - scene.height) * zoom + 12),
+    } : { left: 0, top: 0, right: 0, bottom: 0 };
+    $("preview-frame").style.cssText = `width:${width + extra.left + extra.right}px;height:${height + extra.top + extra.bottom}px`;
+    $("preview").style.left = `${left + extra.left}px`; $("preview").style.top = `${top + extra.top}px`;
+    // Growing space on the negative side must not move the image under the pointer.
+    $("viewport").scrollLeft += extra.left - workspaceInsets.left;
+    $("viewport").scrollTop += extra.top - workspaceInsets.top;
+    workspaceInsets = extra;
+  }
   function renderPreview() {
     if (!state || presenting) return;
     const mode = $("mode").value, spec = state.theme[mode], zoom = Number($("zoom").value);
@@ -346,8 +378,10 @@
     const areaHeight = Math.max(viewport.clientHeight, scene.height * zoom + 40);
     const focusX = home || !$("composer-preview").checked ? themeX + spec.width / 2 : scene.width / 2;
     const top = home ? (areaHeight - scene.height * zoom) / 2 : areaHeight - scene.height * zoom - 20;
-    $("preview-frame").style.cssText = `width:${areaWidth + 2 * marginX}px;height:${areaHeight + 2 * marginY}px`;
-    $("preview").style.cssText = `left:${marginX + areaWidth / 2 - focusX * zoom}px;top:${marginY + top}px;width:${scene.width}px;height:${scene.height}px;transform:scale(${zoom})`;
+    workspace = { zoom, left: marginX + areaWidth / 2 - focusX * zoom, top: marginY + top,
+      width: areaWidth + 2 * marginX, height: areaHeight + 2 * marginY };
+    $("preview").style.cssText = `left:${workspace.left}px;top:${workspace.top}px;width:${scene.width}px;height:${scene.height}px;transform:scale(${zoom});--editor-zoom:${zoom}`;
+    updateWorkspaceSpace();
     $("render-mount").style.cssText = `left:${themeX}px;top:${scene.height - height}px;width:${spec.width}px;height:${height}px`;
     $("overlay").style.cssText = `left:${themeX}px;bottom:0;width:${spec.width}px;height:${spec.height}px`;
     $("grid").hidden = !$("grid-enabled").checked;
@@ -386,6 +420,7 @@
       for (const edge of ["n", "s", "e", "w", "ne", "nw", "se", "sw"]) {
         const handle = document.createElement("span"); handle.className = "handle"; handle.dataset.edge = edge; node.append(handle);
       }
+      updateHandles(node, { x: 0, y: 0, width: box.width, height: box.height });
       $("overlay").append(node);
     }
     updateOverlapWarning();
@@ -393,8 +428,8 @@
   function resetView() {
     if (!state || !scene) return;
     const viewport = $("viewport"), zoom = Number($("zoom").value);
-    viewport.scrollLeft = viewport.clientWidth + Math.max(0, (scene.width * zoom + 40 - viewport.clientWidth) / 2);
-    viewport.scrollTop = viewport.clientHeight + Math.max(0, $("mode").value === "idle" ? (scene.height * zoom + 40 - viewport.clientHeight) / 2 : scene.height * zoom + 40 - viewport.clientHeight);
+    viewport.scrollLeft = workspaceInsets.left + viewport.clientWidth + Math.max(0, (scene.width * zoom + 40 - viewport.clientWidth) / 2);
+    viewport.scrollTop = workspaceInsets.top + viewport.clientHeight + Math.max(0, $("mode").value === "idle" ? (scene.height * zoom + 40 - viewport.clientHeight) / 2 : scene.height * zoom + 40 - viewport.clientHeight);
   }
   function zoomTo(value, clientX, clientY) {
     if (!state || busy) return;
@@ -739,9 +774,7 @@
   }
   function edgeAt(event, node) {
     if (event.target.dataset.edge) return event.target.dataset.edge;
-    const rect = node.getBoundingClientRect(), margin = 5;
-    return (Math.abs(event.clientY - rect.top) < margin ? "n" : Math.abs(event.clientY - rect.bottom) < margin ? "s" : "")
-      + (Math.abs(event.clientX - rect.left) < margin ? "w" : Math.abs(event.clientX - rect.right) < margin ? "e" : "");
+    return model.resizeEdge(node.getBoundingClientRect(), event.clientX, event.clientY);
   }
   $("viewport").addEventListener("pointerdown", event => {
     const node = event.target.closest(".edit-box"); if (busy || presenting || event.button !== 0) return;
@@ -754,6 +787,7 @@
       const { mode, stage, layer, frame, placement } = target;
       gesture = { kind: "background", pointer: event.pointerId, mode, stage, layer, frame, placement: clone(placement),
         edge: event.target.dataset.edge || "", x: event.clientX, y: event.clientY, before: state, dirty };
+      updateBackgroundEditor();
       viewport.setPointerCapture(event.pointerId); return;
     }
     if (spaceDown || !node) {

@@ -165,6 +165,7 @@
     document,
     window: global,
     getComposer: () => domAdapter.getComposerRegion(),
+    getOverlayRect: () => domAdapter.getSummaryPanelRect(),
     onMeasure: handleMeasureClick,
     onExport: () => exportFresh(),
     onExpand: () => exportFresh({ view: true }),

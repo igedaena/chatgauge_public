@@ -2,6 +2,32 @@
 const test = require("node:test"), assert = require("node:assert/strict");
 const fs = require("node:fs"), vm = require("node:vm");
 const sample = () => JSON.parse(fs.readFileSync("tests/fixtures/theme-v1.json", "utf8"));
+test("tiny controls leave the actual element movable and outside handles clear of its interior at every zoom", () => {
+  const m = harness();
+  for (const zoom of [0.25, 0.5, 1, 2, 3, 4]) {
+    const box = { x: -50, y: 90, width: 8, height: 8 }, controls = m.controlLayout(box, zoom);
+    const rect = { left: 100, top: 100, right: 100 + 8 * zoom, bottom: 100 + 8 * zoom, width: 8 * zoom, height: 8 * zoom };
+    assert.equal(m.resizeEdge(rect, rect.left + rect.width / 2, rect.top + rect.height / 2), "");
+    assert.equal(controls.handles.length, zoom < 4 ? 4 : 8);
+    if (controls.compact) for (const point of controls.handles) {
+      assert.ok(point.x < box.x || point.x > box.x + box.width);
+      assert.ok(point.y < box.y || point.y > box.y + box.height);
+      const distance = Math.min(Math.abs(point.x - box.x), Math.abs(point.x - box.x - box.width)) * zoom;
+      assert.ok(Math.abs(distance - 5) < 1e-9);
+    }
+  }
+  assert.equal(m.resizeEdge({ left: 0, top: 0, right: 80, bottom: 40, width: 80, height: 40 }, 79, 1), "ne");
+});
+
+test("background controls follow the image outside the frame without changing its placement", () => {
+  const m = harness(), box = { x: -1000, y: -900, width: 2400, height: 1600 }, before = JSON.stringify(box);
+  const points = m.controlLayout(box, 0.25).handles;
+  assert.equal(points.find(p => p.edge === "nw").x, -1000);
+  assert.equal(points.find(p => p.edge === "nw").y, -900);
+  assert.equal(points.find(p => p.edge === "se").x, 1400);
+  assert.equal(points.find(p => p.edge === "se").y, 700);
+  assert.equal(JSON.stringify(box), before);
+});
 function harness() {
   const context = vm.createContext({ structuredClone });
   for (const file of ["src/theme-contract.js", "tools/theme-editor/editor-model.js"]) vm.runInContext(fs.readFileSync(file, "utf8"), context);
@@ -79,6 +105,10 @@ test("standalone distribution embeds its default PNG, both languages and executa
   const { renderThemeEditor } = await import("../scripts/build-theme-editor.mjs");
   const html = await renderThemeEditor();
   assert.equal(html, await renderThemeEditor(), "The download must build reproducibly");
+  const editor = JSON.parse(fs.readFileSync("tools/theme-editor/version.json", "utf8"));
+  assert.match(html, new RegExp(`<meta name="chatgauge-editor-version" content="${editor.version.replaceAll(".", "\\.")}">`));
+  assert.ok(html.includes(`<span id="editor-version">v${editor.version}</span>`));
+  assert.ok(!html.includes("EDITOR_VERSION"));
   assert.doesNotMatch(html, /<script\s+src=|<link\s+[^>]*href=|EDITOR_BUNDLE_DATA|browser\.runtime|chrome\.runtime/);
   const data = JSON.parse(html.match(/<script id="editor-data" type="application\/json">([\s\S]*?)<\/script>/)[1]);
   assert.equal(data.theme.version, "chatgauge-theme-2");
@@ -88,7 +118,7 @@ test("standalone distribution embeds its default PNG, both languages and executa
   assert.match(data.locales.ko.editor_title.message, /제작기/);
   assert.equal(data.locales.en.editor_title.message, "Theme editor");
   const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)];
-  assert.equal(scripts.length, 8);
+  assert.equal(scripts.length, 9);
   for (const [, source] of scripts) assert.doesNotThrow(() => new vm.Script(source));
 });
 

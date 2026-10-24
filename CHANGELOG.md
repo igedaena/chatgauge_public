@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.3.6 — release candidate
+
+- Keep the meter aligned when ChatGPT's summary panel opens or closes.
+- Prevent tall theme decorations from covering the visible summary panel.
+- Refresh the store screenshots to match the current options interface.
+- Include the separately versioned theme editor 0.1.0 in the source release;
+  its improved transform controls and image downscaling are editor-only changes.
+
+### 한국어
+
+- ChatGPT 요약 패널을 열거나 닫을 때 계기판 위치가 따라오도록 수정했습니다.
+- 높은 테마 장식이 표시 중인 요약 패널을 가리지 않도록 수정했습니다.
+- 현재 옵션 화면에 맞춘 스토어 스크린샷을 준비했습니다.
+- 별도 버전으로 관리하는 테마 에디터0.1.0을 소스 배포에 포함합니다.
+  조절점과 축소 품질 개선은 독립 제작기에 적용됩니다.
+
 ## 0.3.5 — 2026-10-21
 
 - Add locally stored user themes with validated ZIP import, built-in fallback,

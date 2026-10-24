@@ -5,12 +5,12 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const project = fileURLToPath(new URL("../", import.meta.url));
 const sources = ["tools/theme-editor/preview-environment.js", "src/theme-contract.js", "src/exporters/zip.js", "src/theme-package.js", "src/meter-ui.js",
-  "tools/theme-editor/editor-model.js", "tools/theme-editor/editor-recovery.js", "tools/theme-editor/editor.js"];
+  "tools/theme-editor/editor-model.js", "tools/theme-editor/editor-image.js", "tools/theme-editor/editor-recovery.js", "tools/theme-editor/editor.js"];
 
 // Shared app files are read at build time only. The downloadable HTML needs no extension or server.
 export async function renderThemeEditor(root = project) {
   const read = file => readFile(path.join(root, file), "utf8");
-  const [template, css, theme, png, scripts, locales, license] = await Promise.all([
+  const [template, css, theme, png, scripts, locales, license, editor] = await Promise.all([
     read("tools/theme-editor/editor.html"), read("tools/theme-editor/editor.css"),
     read("src/themes/default-sample.json").then(JSON.parse), readFile(path.join(root, "src/themes/default-sample.png")),
     Promise.all(sources.map(read)),
@@ -19,11 +19,14 @@ export async function renderThemeEditor(root = project) {
       ...JSON.parse(await read(`tools/theme-editor/locales/${locale}.json`)),
     }])),
     read("LICENSE"),
+    read("tools/theme-editor/version.json").then(JSON.parse),
   ]);
+  if (typeof editor.version !== "string" || !/^\d+\.\d+\.\d+$/.test(editor.version)) throw new Error("Invalid editor version");
   const data = JSON.stringify({ theme, png: png.toString("base64"), locales: Object.fromEntries(locales) }).replaceAll("<", "\\u003c");
   let html = template.replace("<!doctype html>", () => `<!doctype html>\n<!--\nChatGauge theme editor — project license\n${license.replaceAll("-->", "-- >")}\n-->`)
     .replace('<link rel="stylesheet" href="editor.css">', `<style>\n${css}\n</style>`)
-    .replace("EDITOR_BUNDLE_DATA", () => data);
+    .replace("EDITOR_BUNDLE_DATA", () => data)
+    .replaceAll("EDITOR_VERSION", () => editor.version);
   const tags = [...html.matchAll(/<script src="[^"]+"><\/script>/g)];
   if (tags.length !== scripts.length) throw new Error("Standalone editor script list does not match the template");
   for (let i = 0; i < tags.length; i++) html = html.replace(tags[i][0], () => `<script>\n${scripts[i].replaceAll("</script", "<\\/script")}\n</script>`);

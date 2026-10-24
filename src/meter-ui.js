@@ -54,7 +54,7 @@
   }
 
   // onExpand is optional until the caller connects the document-opening action.
-  function create({ document, window, getComposer, onMeasure, onExport, onExpand, onOptions, layout = null, editing = false }) {
+  function create({ document, window, getComposer, getOverlayRect, onMeasure, onExport, onExpand, onOptions, layout = null, editing = false }) {
     let uiPosition = null;
     let refs = null, currentHost = null, currentMode = null;
     let entryValue, entryLabel = "";
@@ -115,7 +115,7 @@
       if (!refs.expand && typeof onExpand === "function") refs["expand-icon"]?.addEventListener("click", onExpand);
       if (!document.getElementById(HOST_ID)) document.documentElement.append(host);
       uiPosition?.destroy();
-      uiPosition = namespace.uiPosition.create({ host, getComposer, document, window,
+      uiPosition = namespace.uiPosition.create({ host, getComposer, getOverlayRect, document, window,
         bottomOffset: layout?.[mode]?.bottomOffset ?? 0,
         verticalAlign: layout?.[mode]?.verticalAlign ?? "bottom",
         anchorHeight: layout?.[mode]?.height });

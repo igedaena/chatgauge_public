@@ -177,6 +177,19 @@
     }
     return { width, height, items: result };
   }
+  function controlLayout(box, zoom) {
+    const compact = Math.min(box.width, box.height) * zoom < 28, gap = compact ? 5 / zoom : 0;
+    const handles = (compact ? ["ne", "nw", "se", "sw"] : ["n", "s", "e", "w", "ne", "nw", "se", "sw"]).map(edge => ({ edge,
+      x: edge.includes("w") ? box.x - gap : edge.includes("e") ? box.x + box.width + gap : box.x + box.width / 2,
+      y: edge.includes("n") ? box.y - gap : edge.includes("s") ? box.y + box.height + gap : box.y + box.height / 2 }));
+    return { compact, handles };
+  }
+  function resizeEdge(rect, x, y) {
+    // Tiny selections reserve their entire interior for moving; only explicit handles resize.
+    if (Math.min(rect.width, rect.height) < 28) return "";
+    return (Math.abs(y - rect.top) < 5 ? "n" : Math.abs(y - rect.bottom) < 5 ? "s" : "")
+      + (Math.abs(x - rect.left) < 5 ? "w" : Math.abs(x - rect.right) < 5 ? "e" : "");
+  }
   namespace.themeEditorModel = Object.freeze({ create, edit, toggle, drag, pack, roles, normalize, backgroundSize, placement, filename,
-    limits, graphicSize, alignImage, backgroundDrag, expandBackground });
+    limits, graphicSize, alignImage, backgroundDrag, expandBackground, controlLayout, resizeEdge });
 })(globalThis);

@@ -282,10 +282,22 @@
     return null;
   }
 
+  function getSummaryPanelRect(root = document) {
+    for (const panel of root.querySelectorAll("[data-summary-panel-variant], [data-summary-panel]")) {
+      if (panel.closest('[hidden], [inert], [aria-hidden="true"]')) continue;
+      if (typeof panel.checkVisibility === "function"
+        && !panel.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) continue;
+      const rect = panel.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) return rect;
+    }
+    return null;
+  }
+
   namespace.chatGptDomAdapter = Object.freeze({
     selectors,
     diagnosticSummary,
     getComposerRegion,
+    getSummaryPanelRect,
     extract,
     getAssistantActionKeys,
     hasStreamingControl,

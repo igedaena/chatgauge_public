@@ -7,6 +7,7 @@ const fs = require("node:fs"), vm = require("node:vm"), { webcrypto } = require(
 function harness() {
   const png = new Uint8Array(fs.readFileSync("src/themes/default-sample.png"));
   const context = vm.createContext({ structuredClone, crypto: webcrypto, Uint8Array, Map,
+    images: { draw: (ctx, ...args) => ctx.drawImage(...args) },
     canvas: (width, height) => ({ width, height, getContext: () => ({ drawImage() {} }) }),
     toBlob: async () => ({ arrayBuffer: async () => png.buffer }),
     backgroundImage: (input, assets, mode) => input.theme[mode].background,

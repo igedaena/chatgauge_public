@@ -25,7 +25,7 @@ Requires Firefox 140 or later and a signed-in ChatGPT account.
 [Firefox 부가 기능 스토어](https://addons.mozilla.org/addon/chatgauge/)에서 설치할 수 있습니다.
 Firefox 140 이상과 ChatGPT 로그인이 필요합니다.
 
-This source corresponds to version 0.3.5, approved on Firefox Add-ons. For published downloads,
+This is the source candidate for ChatGauge 0.3.6. It has not yet been submitted or approved. For published downloads,
 see [GitHub Releases](https://github.com/igedaena/chatgauge_public/releases).
 See [CHANGELOG.md](CHANGELOG.md) for changes between versions.
 
@@ -58,6 +58,9 @@ downloads. Open it locally in a browser, edit and save a theme ZIP, then import
 that ZIP in the extension. The editor is not bundled in the extension.
 See [the editor guide](tools/theme-editor/README.md) for building from source and
 the optional editor-only recovery ZIP.
+
+The editor is versioned independently; this source includes editor 0.1.0.
+See [its changelog](tools/theme-editor/CHANGELOG.md) for editor changes.
 
 확장 옵션에서 사용자 테마를 켜고 에디터로 저장한 테마 ZIP을 불러오세요.
 사용자 테마를 끄면 불러온 테마는 보존하고 내장 기본 테마를 표시합니다.
@@ -124,7 +127,7 @@ To prepare an AMO upload, install Mozilla's `web-ext` tool, then run:
 ```sh
 node scripts/prepare-amo-package.mjs
 web-ext lint --source-dir dist/amo/runtime
-web-ext build --source-dir dist/amo/runtime --artifacts-dir dist/amo --filename ChatGauge-0.3.5-amo.zip
+web-ext build --source-dir dist/amo/runtime --artifacts-dir dist/amo --filename ChatGauge-0.3.6-amo.zip
 ```
 
 The staging script copies an explicit runtime allowlist without transforming

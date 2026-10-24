@@ -99,7 +99,13 @@ function harness(formats = ["md"], { inputMode = false, modeRead, filenameOption
       createObjectURL(blob) { blobs.push(blob); return "blob:test"; },
       revokeObjectURL() {},
     },
-    MutationObserver: class { constructor(callback) { context.observe = callback; } observe() {} },
+    MutationObserver: class {
+      constructor(callback) { this.callback = callback; }
+      observe(_target, options) {
+        if (options.childList && options.subtree) context.observe = this.callback;
+      }
+      disconnect() {}
+    },
     setTimeout(fn, delay) { timers.set(++timerId, { fn, delay }); return timerId; },
     clearTimeout(id) { timers.delete(id); },
     requestAnimationFrame() { return 1; },

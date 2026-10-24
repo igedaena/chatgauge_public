@@ -6,6 +6,23 @@ const test = require("node:test");
 require("../src/model.js");
 require("../src/adapters/chatgpt-dom.js");
 
+test("summary panel bounds exclude hidden, transparent and empty retained panels", () => {
+  const rect = { left: 1000, right: 1300, top: 50, bottom: 250, width: 300, height: 200 };
+  const panel = (hidden, visible, bounds = rect) => ({
+    closest: () => hidden ? {} : null,
+    checkVisibility: options => visible && options.checkOpacity && options.checkVisibilityCSS,
+    getBoundingClientRect: () => bounds,
+  });
+  let panels = [panel(true, true), panel(false, false), panel(false, true, { width: 0, height: 0 }), panel(false, true)];
+  const root = { querySelectorAll: () => panels };
+  const read = globalThis.Chatcouter.chatGptDomAdapter.getSummaryPanelRect;
+  assert.equal(read(root), rect);
+  panels = [panel(true, true), panel(false, false)];
+  assert.equal(read(root), null);
+  panels = [];
+  assert.equal(read(root), null);
+});
+
 test("structural diagnostics distinguish messages outside main without retaining their content", () => {
   const composer = { textContent: "private draft", closest: () => null };
   const roles = [{ textContent: "private user" }, { textContent: "private answer" }];

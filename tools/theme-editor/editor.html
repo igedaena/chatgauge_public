@@ -3,12 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="chatgauge-editor-version" content="EDITOR_VERSION">
   <title data-i18n="editor_title">ChatGauge theme editor</title>
   <link rel="stylesheet" href="editor.css">
 </head>
 <body>
   <header>
-    <div class="header-start"><div><span class="eyebrow">ChatGauge</span><h1 data-i18n="editor_title">Theme editor</h1></div>
+    <div class="header-start"><div><span class="eyebrow">ChatGauge · <span id="editor-version">vEDITOR_VERSION</span></span><h1 data-i18n="editor_title">Theme editor</h1></div>
     </div>
     <div class="header-actions">
       <button id="actual-preview-toggle" aria-pressed="false" data-i18n="editor_actual_preview">Preview appearance</button>
@@ -72,6 +73,7 @@
   <script src="../../src/theme-package.js"></script>
   <script src="../../src/meter-ui.js"></script>
   <script src="editor-model.js"></script>
+  <script src="editor-image.js"></script>
   <script src="editor-recovery.js"></script>
   <script src="editor.js"></script>
 </body>

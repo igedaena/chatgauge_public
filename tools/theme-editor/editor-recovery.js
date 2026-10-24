@@ -51,7 +51,7 @@
         editor.backgrounds[mode][i] = null;
         if (i > 0 && !original) { if (i < activeCount) spec.sources[i] = null; continue; }
         const frame = canvas(spec.width, spec.height);
-        if (image && placement) frame.getContext("2d").drawImage(image, placement.x, placement.y, placement.width, placement.height);
+        if (image && placement) ns.themeEditorImage.draw(frame.getContext("2d"), image, placement.x, placement.y, placement.width, placement.height);
         add(`${mode}.background.${i}`, frame, true, rect => {
           if (i < activeCount) spec.sources[i] = rect;
           if (original) editor.backgrounds[mode][i] = rect;
@@ -60,12 +60,12 @@
       for (const role of model.roles(mode)) theme[mode].components[role]?.paint?.forEach((layer, i) => {
         const image = assets.get(`${mode}.${role}.${i}`); if (!image) fail();
         const size = model.graphicSize(image.width, image.height), frame = canvas(size.width, size.height);
-        frame.getContext("2d").drawImage(image, 0, 0, frame.width, frame.height);
+        ns.themeEditorImage.draw(frame.getContext("2d"), image, 0, 0, frame.width, frame.height);
         add(`${mode}.${role}.${i}`, frame, false, rect => { layer.source = rect; });
       });
     }
     const box = state.placementBackground, visible = visiblePlacement(box), layer = canvas(visible.width, visible.height);
-    layer.getContext("2d").drawImage(assets.get("conversation.placementBackground"), box.x - visible.x, box.y - visible.y, box.width, box.height);
+    ns.themeEditorImage.draw(layer.getContext("2d"), assets.get("conversation.placementBackground"), box.x - visible.x, box.y - visible.y, box.width, box.height);
     add("placement", layer, true, rect => { editor.placement = { source: rect, ...visible, locked: box.locked, color: box.color, fill: box.fill }; });
     const plan = model.pack(items), image = canvas(plan.width, plan.height), ctx = image.getContext("2d");
     for (const item of plan.items) {

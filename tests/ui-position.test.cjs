@@ -255,3 +255,122 @@ test("uses viewport bounds for root/body overflow rather than a zero-height body
   assert.equal(host.style.clipPath, "inset(0px 0px 0px 0px)");
   positioner.destroy();
 });
+
+function movingLayout(getOverlayRect) {
+  let offset = 0, sequence = 0;
+  const frames = new Map(), listeners = new Map(), attributes = new Map();
+  const resized = new Set();
+  const root = { clientWidth: 1600, clientHeight: 900 };
+  const ancestor = { parentElement: root };
+  const composer = { parentElement: ancestor, getBoundingClientRect: () =>
+    ({ ...rect, left: rect.left + offset, right: rect.right + offset }) };
+  const host = { style: {}, getBoundingClientRect: () => size };
+  const window = {
+    getComputedStyle: () => ({ fontFamily: "Arial", overflowX: "visible", overflowY: "visible" }),
+    ResizeObserver: class {
+      observe(node) { resized.add(node); }
+      unobserve(node) { resized.delete(node); }
+      disconnect() { resized.clear(); }
+    },
+    MutationObserver: class {
+      constructor(callback) { this.callback = callback; }
+      observe(node, options) { attributes.set(node, { options, callback: this.callback }); }
+      disconnect() { attributes.clear(); }
+    },
+    requestAnimationFrame(callback) { frames.set(++sequence, callback); return sequence; },
+    cancelAnimationFrame(id) { frames.delete(id); },
+    addEventListener(name, callback) { listeners.set(name, callback); },
+    removeEventListener(name) { listeners.delete(name); },
+  };
+  const positioner = create({ host, getComposer: () => composer, getOverlayRect, document: { documentElement: root }, window });
+  const flush = () => { const callbacks = [...frames.values()]; frames.clear(); callbacks.forEach(fn => fn()); };
+  flush();
+  return { host, root, ancestor, composer, positioner, frames, listeners, attributes, resized, flush,
+    move(value) { offset = value; },
+    change(node, attributeName) {
+      const entry = attributes.get(node);
+      if (entry?.options.attributes && entry.options.attributeFilter.includes(attributeName))
+        entry.callback([{ type: "attributes", target: node, attributeName }]);
+    },
+    transition(type, target, propertyName) { listeners.get(type)?.({ target, propertyName }); },
+  };
+}
+
+test("follows size-preserving ancestor attribute shifts in both directions without scroll or resize", () => {
+  const layout = movingLayout();
+  assert.equal(layout.host.style.left, "1008px");
+  layout.move(-180);
+  layout.change(layout.ancestor, "class");
+  layout.flush();
+  assert.equal(layout.host.style.left, "828px");
+  layout.move(0);
+  layout.change(layout.root, "style");
+  layout.flush();
+  assert.equal(layout.host.style.left, "1008px");
+  assert.equal(layout.attributes.has(layout.host), false);
+  for (const { options } of layout.attributes.values()) assert.notEqual(options.subtree, true);
+  layout.positioner.destroy();
+});
+
+test("rechecks final and cancelled layout transitions, including a sibling panel, but ignores decoration", () => {
+  const layout = movingLayout(), panel = {};
+  layout.transition("transitionrun", panel, "transform");
+  layout.move(-50); layout.flush();
+  layout.move(-180);
+  layout.transition("transitionend", panel, "transform");
+  layout.flush();
+  assert.equal(layout.host.style.left, "828px");
+  layout.move(0);
+  layout.transition("transitioncancel", panel, "width");
+  layout.flush();
+  assert.equal(layout.host.style.left, "1008px");
+  layout.transition("transitionend", panel, "opacity");
+  layout.transition("transitionend", layout.host, "transform");
+  assert.equal(layout.frames.size, 0);
+  layout.positioner.destroy();
+});
+
+test("rebinds layout observers when the same form is reparented and releases pending layout work", () => {
+  const layout = movingLayout(), replacement = { parentElement: layout.root };
+  layout.composer.parentElement = replacement;
+  layout.positioner.schedule(); layout.flush();
+  assert.equal(layout.attributes.has(layout.ancestor), false);
+  assert.equal(layout.resized.has(layout.ancestor), false);
+  assert.equal(layout.attributes.has(replacement), true);
+  layout.change(replacement, "style");
+  layout.positioner.destroy();
+  assert.equal(layout.frames.size, 0);
+  assert.equal(layout.attributes.size, 0);
+  assert.equal(layout.resized.size, 0);
+  assert.equal(layout.listeners.size, 0);
+  layout.positioner.schedule();
+  assert.equal(layout.frames.size, 0);
+});
+
+test("subtracts only a panel overlap and restores the ordinary clip when it closes", () => {
+  let panel = { left: 1100, right: 1400, top: 700, bottom: 760 };
+  const layout = movingLayout(() => panel);
+  assert.equal(layout.host.style.clipPath, 'path(evenodd, "M0 0H250V80H0Z M92 0H250V40H92Z")');
+  assert.equal(layout.host.style.visibility, "visible");
+  panel = null;
+  layout.positioner.schedule(); layout.flush();
+  assert.equal(layout.host.style.clipPath, "inset(0px 0px 0px 0px)");
+  layout.positioner.destroy();
+});
+
+test("intersects the panel cutout with existing viewport clipping and disables fully covered controls", () => {
+  let panel = { left: 1050, right: 1400, top: 740, bottom: 780 };
+  const layout = movingLayout(() => panel);
+  layout.root.clientWidth = 1100;
+  layout.positioner.schedule(); layout.flush();
+  assert.equal(layout.host.style.clipPath, 'path(evenodd, "M0 0H92V80H0Z M42 20H92V60H42Z")');
+  panel = { left: 0, right: 1600, top: 0, bottom: 900 };
+  layout.positioner.schedule(); layout.flush();
+  assert.equal(layout.host.style.visibility, "hidden");
+  assert.equal(layout.host.inert, true);
+  panel = null;
+  layout.positioner.schedule(); layout.flush();
+  assert.equal(layout.host.style.visibility, "visible");
+  assert.equal(layout.host.inert, false);
+  layout.positioner.destroy();
+});
