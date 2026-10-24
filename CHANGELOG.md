@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.3.6 — release candidate
+## 0.3.6 — Published on Firefox Add-ons, 2026-10-24
 
 - Keep the meter aligned when ChatGPT's summary panel opens or closes.
 - Prevent tall theme decorations from covering the visible summary panel.
